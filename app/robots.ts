@@ -5,7 +5,7 @@ export default function robots() {
         userAgent: '*',
       },
     ],
-    sitemap: 'https://devflow.github.io/sitemap.xml',
-    host: 'https://devflow.github.io',
+    sitemap: 'https://devflow8.vercel.app/sitemap.xml',
+    host: 'https://devflow8.vercel.app',
   }
 }

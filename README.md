@@ -15,7 +15,7 @@ If you notice anything that you'd like to improve, feel free to [create an issue
 ## Requirements
 
 1. [Node.js](https://nodejs.org/)
-2. [npm](https://www.npmjs.com/)
+2. [VSCode](https://code.visualstudio.com/)
 
 ## Getting started
 1. Install the `pnpm` package manager: https://pnpm.io/
