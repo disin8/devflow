@@ -5,7 +5,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Navbar } from './components/nav'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://devflow.github.io'),
+  metadataBase: new URL('https://devflow8.vercel.app'),
   title: {
     default: 'devflow',
     template: '%s | devflow',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'devflow',
     description: 'Enhance your development workflow 10x.',
-    url: 'https://devflow.github.io',
+    url: 'https://devflow8.vercel.app',
     siteName: 'devflow',
     locale: 'en_US',
     type: 'website',
