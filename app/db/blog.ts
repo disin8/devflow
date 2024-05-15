@@ -9,6 +9,7 @@ interface Metadata {
 }
 
 function parseFrontmatter(fileContent: string) {
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   const frontmatterRegex = /---\s*([\s\S]*?)\s*---/
   const match = frontmatterRegex.exec(fileContent)
   const frontMatterBlock = match![1]
@@ -36,8 +37,8 @@ function readMDXFile(filePath) {
 }
 
 function extractTweetIds(content) {
-  const tweetMatches = content.match(/<StaticTweet\sid="[0-9]+"\s\/>/g)
-  return tweetMatches?.map(tweet => tweet.match(/[0-9]+/g)[0]) || []
+  const tweetMatches = content.match(/<StaticTweet\sid="\d+"\s\/>/g)
+  return tweetMatches?.map(tweet => tweet.match(/\d+/g)[0]) || []
 }
 
 function getMDXData(dir) {

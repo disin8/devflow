@@ -18,8 +18,8 @@ export async function generateMetadata({
     image,
   } = post.metadata
   const ogImage = image
-    ? `https://devflow.github.io${image}`
-    : `https://devflow.github.io/og?title=${title}`
+    ? `https://devflow8.vercel.app${image}`
+    : `https://devflow8.vercel.app/og?title=${title}`
 
   return {
     title,
@@ -29,7 +29,7 @@ export async function generateMetadata({
       description,
       type: 'article',
       publishedTime,
-      url: `https://devflow.github.io/${post.slug}`,
+      url: `https://devflow8.vercel.app/${post.slug}`,
       images: [
         {
           url: ogImage,
@@ -104,9 +104,9 @@ export default function Blog({ params }) {
             'dateModified': post.metadata.publishedAt,
             'description': post.metadata.summary,
             'image': post.metadata.image
-              ? `https://devflow.github.io${post.metadata.image}`
-              : `https://devflow.github.io/og?title=${post.metadata.title}`,
-            'url': `https://devflow.github.io/${post.slug}`,
+              ? `https://devflow8.vercel.app${post.metadata.image}`
+              : `https://devflow8.vercel.app/og?title=${post.metadata.title}`,
+            'url': `https://devflow8.vercel.app/${post.slug}`,
             'author': {
               '@type': 'Person',
               'name': 'devtools',
