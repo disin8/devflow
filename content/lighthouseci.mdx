@@ -1,0 +1,84 @@
+---
+title: "Lighthouse CI"
+publishedAt: "2024-05-11"
+summary: "Setup and monitor your lighthouse score"
+---
+
+## lighthouse
+
+install lhci tool to run your lighthouse score locally during development
+
+```
+npm i -g @lhci/cli
+```
+
+Define lighthouse config
+
+```js
+module.exports = {
+  ci: {
+    collect: {
+      url: ['http://localhost:3000/'],
+      startServerCommand: 'npm run start',
+      numberOfRuns: 1,
+    },
+    upload: {
+      target: 'temporary-public-storage',
+    },
+  },
+};
+```
+
+Then you can run your lighthouse process by following command
+
+```
+lhci autorun
+```
+
+## lhci server
+
+You can setup and running your local lhci server 
+
+```
+npm install -D @lhci/cli @lhci/server sqlite3
+npx lhci server --storage.storageMethod=sql --storage.sqlDialect=sqlite --storage.sqlDatabasePath=./db.sql
+```
+
+or deploy it using Heroku, Docker and any other ways, full documentaion on [link](https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/server.md)
+
+## CI
+
+To run the lighthouse score on every pull pull_request of your repository
+
+```yml
+# .github/workflows/lighthouseci.yml
+name: lighthouse
+on:
+  pull_request:
+    branches: ["main"]
+jobs:
+  lighthouseci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install && npm install -g @lhci/cli@0.13.x
+      - run: npm run build
+      - run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+```
+
+### lhci url preview
+
+To setup url preview use [lighthouse-ci](https://github.com/apps/lighthouse-ci) application by github 
+
+### Further Reading
+
+- [changesets](https://github.com/changesets/changesets)
+- [commitlint](https://commitlint.js.org/)
+- [lint-staged](https://github.com/lint-staged/lint-staged)
+
+

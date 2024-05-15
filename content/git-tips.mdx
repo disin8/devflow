@@ -1,0 +1,42 @@
+---
+title: "Git tips"
+publishedAt: "2024-05-12"
+summary: "Some collection of tips when using git"
+---
+
+## ci skip
+
+GitHub's `ci skip`: Your Shortcut to Streamlined Development
+
+`ci skip` on GitHub lets you bypass the CI pipeline for specific commits, saving time when making small changes or testing experimental features.
+
+### How it works:
+
+- Add `ci skip` to your commit message (case-insensitive).
+- Skips workflows triggered by `on: push` or `on: pull_request`.
+- Subsequent commits won't be skipped automatically.
+
+### When to use it:
+
+- Minor, non-critical changes.
+- Testing experimental features.
+- Reverting changes quickly.
+
+### Best practices:
+
+- Communicate clearly in commit messages.
+- Consider alternatives (e.g., separate branches).
+
+### Examples of skip ci messages:
+
+- [skip ci]
+- [ci skip]
+- [no ci]
+- [skip actions]
+- [actions skip]
+
+`ci skip` is a valuable tool for streamlining development, but use it responsibly alongside best practices to maintain code quality and project integrity.
+For further documentaion read the [official documentation](https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs).
+
+
+## Multi User Git: WIP

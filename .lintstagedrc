@@ -1,0 +1,11 @@
+{
+  "*.tsx": [
+    "eslint"
+  ],
+  "*.ts": [
+    "eslint"
+  ],
+  "*.html": [
+    "eslint"
+  ]
+}

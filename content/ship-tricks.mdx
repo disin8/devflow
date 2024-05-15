@@ -1,0 +1,22 @@
+---
+title: "Ship tips"
+publishedAt: "2024-05-10"
+summary: "Some collection of tips when to ship ready to use product"
+---
+
+## Hidden Horizontal Overflow
+
+In some cases, there might be an element that is literally wider than the document is, which might cause horizontal overflow scrolling. You could use a little JavaScript to help you find the culprit.
+
+```
+const documentWidth = document.documentElement.offsetWidth;
+document.querySelectorAll('*').forEach((node) => {
+  if (node.offsetWidth > documentWidth) {
+    console.log(node);
+  }
+});
+```
+
+### Playwright script: WIP
+
+

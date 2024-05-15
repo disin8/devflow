@@ -1,0 +1,39 @@
+---
+title: "Changesets and changelog configuration"
+publishedAt: "2024-05-11"
+summary: "Setup changesets and config your changelog"
+---
+
+## changesets
+
+Allow you write custom logic on precommit, prepush and other scenarios to your git.
+
+```
+npm i -D @changesets/cli
+npm run changeset init
+```
+
+From here you are set up to use changesets. Add your first changeset by running
+
+```
+npm run changeset
+```
+
+Add a release script
+
+```json
+// package.json
+{
+  "scripts": {
+    "release": "yarn build && changeset publish"
+  }
+}
+```
+
+
+### Further Reading
+
+- [changesets](https://github.com/changesets/changesets)
+- [commitlint](https://commitlint.js.org/)
+- [lint-staged](https://github.com/lint-staged/lint-staged)
+

@@ -1,0 +1,58 @@
+---
+title: "Branch protection rules"
+publishedAt: "2024-05-11"
+summary: "How to protect your branch from damage"
+---
+
+## Pull Request settings
+
+Navigate to Settings > General to configure Pull Request settings. These settings determine the conditions that must be met before a pull request can be merged into the target branch.
+
+<Image
+  alt={`Pull Request settings`}
+  src={`/images/branch-protection/pull-request.png`}
+  width={1680}
+  height={184}
+/>
+
+## Branch Protection rules
+
+Head over to Settings > Branches and click on "Add branch protection rule" to establish rules for specific branches.
+
+ These rules help maintain code quality and prevent accidental merges.
+
+### Branch name pattern
+
+Specify the name or regular expression for branches to which these rules will be applied. For instance, you can use "main" as a full branch name or a regex pattern like "qa/**/*" to match branches like "qa/foo/bar/foobar/hello-world".
+
+<Image
+  alt={`Branch Protection`}
+  src={`/images/branch-protection/branch-protection.png`}
+  width={1680}
+  height={184}
+/>
+
+
+### Required Status Checks
+
+Choose the required status checks for your branch if you use them. These checks ensure that the code meets certain criteria before it can be merged. Examples include linting and type checking.
+
+### Linear History
+
+Enable linear history for easier readability of git history. This ensures a clean and straightforward commit history, making it easier to track changes and identify issues.
+
+<Image
+  alt={`Required status checks`}
+  src={`/images/branch-protection/status-linear.png`}
+  width={1680}
+  height={184}
+/>
+
+## Conclusion
+
+By implementing branch protection rules, you can enhance the quality and security of your codebase. These rules help prevent accidental merges, enforce code quality standards, and maintain a clean git history.
+
+### Further Reading
+
+- [GitHub rules](https://docs.github.com/ru/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
+

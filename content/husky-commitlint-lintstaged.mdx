@@ -1,0 +1,157 @@
+---
+title: "Husky, Commitlint, and Lint-Staged"
+publishedAt: "2024-05-11"
+summary: "Keeping Your Code Clean and Consistent"
+---
+
+Maintaining clean and consistent code is crucial for any developer. 
+
+`husky`, `commitlint`, and `lint-staged` are three tools that can help you achieve this goal by automating pre-commit checks and linting.
+
+## Husky: The Git Hook Manager
+
+Husky is a Git hook manager that allows you to define scripts to run before, during, or after Git events like commit, push, or pull. 
+
+This makes it ideal for automating pre-commit checks, such as linting, running tests, or formatting code.
+
+### Key Features of Husky
+
+- Customizable Hooks: Define custom scripts for various Git hooks (e.g., pre-commit, pre-push).
+
+- Seamless Integration: Easily integrates with popular tools like `ESLint`, `Prettier`, and `Jest`.
+
+- Improved Workflow: Automates routine tasks, freeing up time for actual development.
+
+### Installation
+
+```
+npm i --save-dev husky
+```
+
+Husky init (recommended):
+
+The init command simplifies setting up `husky` in a project. 
+
+```
+npx husky init
+```
+
+Defining Hooks:
+
+Husky provides a .husky directory where you can define your Git hooks. For example, to run npm test before every commit, create a pre-commit file in .husky:
+
+```
+npm test
+```
+
+
+## commitlint
+
+`commitlint` helps you enforce consistent commit message formatting by checking messages against a set of rules.
+
+This ensures that your commit messages are clear, concise, and follow a standard format.
+
+
+### Key Features of Commitlint
+
+- Standardization: Enforces a standard format for commit messages, making it easier to track changes.
+
+- Customization: Supports custom rules and configurations.
+
+- Integration: Easily integrates with Git hooks via `husky`.
+
+### Installation 
+
+```
+npm i -D @commitlint/config-conventional @commitlint/cli
+```
+
+Then, add this to the husky hook
+
+```
+# .husky/pre-commit
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx --no -- commitlint --edit $1
+```
+
+Add commitlint config
+
+```js
+// commitlint.config.js
+const config = { extends: ["@commitlint/config-conventional"] };
+export default config;
+```
+
+## lint-staged
+
+`lint-staged` allows you to run linting only on the files that have been staged for the next commit. 
+
+This speeds up your workflow by avoiding linting files that haven't changed.
+
+### Key Features of `lint-Staged`
+
+- Efficiency: Runs linters only on staged files, improving speed and performance.
+
+- Flexibility: Supports any custom linting or formatting scripts.
+
+- Integration: Works seamlessly with both Husky and popular linters like `ESLint` and `Prettier`.
+
+
+### Installation
+
+```
+npm i -D lint-staged
+```
+
+To run linters on git staged files
+
+```
+# .husky/pre-commit
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npx lint-staged
+```
+
+And config for running linters:
+
+```json
+// .lintstagedrc
+{
+  "*.ts": [
+    "prettier --write",
+    "eslint --fix ."
+  ]
+}
+```
+
+## Putting It All Together
+
+By combining `husky`, `commitlint`, and `lint-staged`, you can create a powerful pre-commit workflow that ensures your code is always clean and consistent.
+
+## Example Workflow
+
+1. `husky` runs `lint-staged` before every commit.
+2. `lint-staged` runs the appropriate linting commands for the staged files.
+3. `commitlint` checks the commit message against the configured rules.
+4. If all checks pass, the commit is allowed.
+
+This workflow helps you catch errors early, maintain consistent code quality, and improve your overall development experience.
+
+## Benefits
+
+- Early Error Detection: Catch issues before they make it into the codebase.
+
+- Improved Code Quality: Enforce consistent code standards and best practices.
+
+- Enhanced Productivity: Automate repetitive tasks, allowing developers to focus on writing code.
+
+### Further Reading
+
+- [husky](https://typicode.github.io/husky/)
+- [commitlint](https://commitlint.js.org/)
+- [lint-staged](https://github.com/lint-staged/lint-staged)
+
+

@@ -1,0 +1,114 @@
+---
+title: 'Antfu Tools'
+publishedAt: '2024-05-13'
+summary: 'Antfu tools for fast setup'
+---
+
+Collection of dope stuff from Antfu:
+
+- [ni](#ni-use-the-right-package-manager)
+- [eslint-config](#eslint-config)
+
+## ni - use the right package manager
+
+Are you tired of juggling different package managers, trying to remember which one to use for each project? Well, say hello to `ni` , your new best friend in the world of package management!
+
+Think of [antfu/ni](https://github.com/antfu-collective/ni) as your personal package manager whisperer.
+
+It automatically detects which package manager your project uses (npm, yarn, pnpm, or bun) and runs the appropriate commands for you.
+ 
+No more confusion, no more wasted time figuring things out. Just pure, streamlined efficiency.
+
+### Why use
+
+- **Simplify your workflow:** `ni` can be used for installing packages, running scripts, and managing dependencies, regardless of the package manager being used. This can help to streamline your workflow and make you more productive.
+
+- **Boost your productivity:** No more context switching between different package managers. `ni` keeps you in the flow, getting things done faster.
+
+- **Improve consistency:**  By using a single tool for all of your package management needs, you can help to ensure that your projects are consistent and that everyone on your team is using the same tools.
+
+- **Increase efficiency:** `ni` can help you to avoid making mistakes by automatically detecting the correct package manager to use. This can save you time and effort in the long run.
+
+### What can ni do?
+
+- **Automatic package manager detection:** can automatically detect which package manager is being used for a project, based on the presence of a `package-lock.json`, `package.json`, `yarn.lock`, `pnpm-lock.yaml`, or `bun.lockb` file.
+
+- **Cross-package manager functionality:** `ni` can be used for a variety of tasks, including installing and uninstalling packages, running scripts, and managing dependencies, working seamlessly with npm, yarn, pnpm, and bun.
+
+- **Customization:** `ni` can be configured through a configuration file (~/.nirc) to set default behaviors, such as the preferred package manager.
+
+### Getting Started
+
+- **Installation:** To install `ni`, simply run: 
+
+```
+npm i -g @antfu/ni
+```
+
+- **Usage:** Once `ni` is installed, you can use it in your terminal like so:
+
+```
+ni <package-manager-command>
+```
+
+For example, to install the react package using `ni`, you would run:
+
+```
+ni react
+```
+
+Or for running project in development:
+
+```
+nr dev
+```
+
+- **Documentation:**  For more detailed instructions please refer to the official documentation on the GitHub repository [https://github.com/antfu-collective/ni](https://github.com/antfu-collective/ni)
+
+## eslint-config
+
+Tired of Linting Headaches? Meet Your New BFF: [eslint-config](https://github.com/antfu/eslint-config) from Antfu!
+
+Let's face it, linting can be a pain. Remembering all the rules, configuring different tools, and fixing errors can feel like a never-ending chore. But fear not, my coding friends, because there's a new sheriff in town – eslint-config from Antfu!
+
+This awesome tool is like having a personal linting expert by your side, taking care of all the nitty-gritty details so you can focus on writing clean, beautiful code.
+
+### So, what makes eslint-config so special?
+
+- **Effortless Setup:** Just install it with `npm i -D eslint @antfu/eslint-config` and you're good to go! No more messing around with configurations – eslint-config comes with sensible defaults that work like a charm for most projects.
+
+- **Opinionated, But Customizable:** While eslint-config has some strong opinions about how your code should look (think of it as a friendly nudge in the right direction), it's also incredibly flexible. You can easily tweak the rules to match your specific preferences and coding style.
+
+- **Multi-Talented Master:** This bad boy doesn't just handle JavaScript; it's also fluent in TypeScript, Vue, and a bunch of other languages. Plus, it can be your wingman with Prettier, stylelint, and even format your CSS, HTML, and other files. Talk about a versatile friend!
+
+- **Auto-Fix FTW:** Made a typo? Forgot a semicolon? No worries! eslint-config automatically fixes common code style issues, saving you precious time and effort.
+
+- **Well-Documented and Supported:** Got a question? Stuck on something? Don't fret! eslint-config has comprehensive documentation and a friendly community of users ready to help you out.
+
+### Getting Started
+
+- **Installation: To install eslint-config, simply run:**
+
+```
+npm i -D eslint @antfu/eslint-config
+```
+
+Usage: Once eslint-config is installed, you can create an `eslint.config.js` or `eslint.config.mjs` file in your project's root directory and add the following code:
+
+```
+module.exports = require('@antfu/eslint-config')
+```
+
+Customization: You can customize eslint-config by adding options to the module.exports object. For example, to enable support for TypeScript, you would add the following option:
+
+```
+module.exports = require('@antfu/eslint-config')({
+  typescript: true,
+})
+```
+
+## Further Reading
+
+- [antfu](https://github.com/antfu)
+- [antfu/ni](https://github.com/antfu-collective/ni)
+- [eslint-config](https://github.com/antfu/eslint-config)
