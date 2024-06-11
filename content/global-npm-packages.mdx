@@ -1,0 +1,87 @@
+---
+title: "Global npm packages"
+publishedAt: "2024-06-11"
+summary: "knip, npm-check-updates, localtunnel, @antfu/ni, @changesets/cli"
+---
+
+- [knip](#knip)
+- [npm-check-updates](#npm-check-updates)
+- [localtunnel](#localtunnel)
+- [@antfu/ni](#ni)
+- [@changesets/cli](#changesets)
+
+
+## knip
+
+Knip finds unused files, dependencies and exports in your JavaScript and TypeScript projects.
+
+Installation
+
+```
+npm install -g knip
+```
+
+Just write `knip` or `knip --watch` in console and you will see the full list of unsed files, dependencies and exports.
+
+
+## npm-check-updates
+
+`npm-check-updates` upgrades your package.json dependencies to the latest versions, ignoring specified versions.
+
+Installation
+
+```
+npm install -g npm-check-updates
+```
+
+Use `ncu` to see the list of the packages that may be updated.
+
+Use `ncu -u` to update all packages to the latest version in `package.json`.
+
+## localtunnel
+
+`localtunnel` exposes your localhost to the world for easy testing and sharing! No need to mess with DNS or deploy just to have others test out your changes.
+
+Installation
+
+```
+npm install -g localtunnel
+```
+
+Use `lt --port 3000` to expose your localhost to the world.
+
+## ni
+
+`@antfu/ni` is a perfect package manager. 
+
+Installation
+
+```
+npm install -g @antfu/ni
+```
+
+Use `ni` to install dependencies or `nr dev` to run dev server.
+
+## changesets
+
+`@changesets/cli` helps you manage the versioning and changelog entries for your packages, with a focus on versioning within a mono-repository
+
+Installation
+
+```
+npm install -g @changesets/cli
+```
+
+Use `npm changeset` to add a patch, mirror or major stage.
+
+When the you wants to release packages, just run `yarn changeset version` and then `yarn changeset publish`
+
+
+### Further Reading
+
+- [knip](https://www.npmjs.com/package/knip)
+- [npm-check-updates](https://www.npmjs.com/package/npm-check-updates)
+- [localtunnel](https://www.npmjs.com/package/localtunnel)
+- [@antfu/ni](https://www.npmjs.com/package/@antfu/ni)
+- [@changesets/cli](https://www.npmjs.com/package/@changesets/cli)
+
