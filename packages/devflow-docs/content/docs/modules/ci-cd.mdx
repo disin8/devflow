@@ -1,0 +1,151 @@
+---
+title: CI/CD
+description: "Generate GitHub Actions CI/CD pipelines, GitLab CI configs, Renovate, and Dependabot configurations for Node.js projects automatically. Complete lint → typecheck → test → build workflow out of the box."
+---
+
+## GitHub Actions
+
+**CI workflow for GitHub** — generates a complete lint → typecheck → test → build pipeline.
+
+[📖 Official Docs](https://docs.github.com/en/actions)
+
+- **ID:** `github-actions`
+- **Category:** CI
+
+### What it does
+
+- Creates `.github/workflows/ci.yml`
+- Pipeline runs on push to `main`/`master` and all PRs
+- Steps: install → lint → typecheck → test → build
+
+### Package Manager Awareness
+
+The generated workflow adapts to your package manager:
+
+| PM       | Install Command                  | Steps                         |
+| -------- | -------------------------------- | ----------------------------- |
+| **npm**  | `npm ci`                         | Standard                      |
+| **pnpm** | `pnpm install --frozen-lockfile` | Adds `pnpm/action-setup` step |
+| **yarn** | `yarn install --frozen-lockfile` | Standard                      |
+| **bun**  | `bun install --frozen-lockfile`  | Adds `oven-sh/setup-bun` step |
+
+### Generated Workflow Example (pnpm)
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+        continue-on-error: true
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+```
+
+---
+
+## GitLab CI
+
+**Pipeline generator for GitLab** — generates `.gitlab-ci.yml`.
+
+[📖 Official Docs](https://docs.gitlab.com/ee/ci/)
+
+- **ID:** `gitlab-ci`
+- **Category:** CI
+
+### What it does
+
+- Creates `.gitlab-ci.yml` with stages: lint, test, build
+- Configures caching for `node_modules`
+
+---
+
+## Codecov
+
+**Coverage upload configuration** — integrates with Codecov for coverage tracking.
+
+[📖 Official Docs](https://codecov.io/)
+
+- **ID:** `codecov`
+- **Category:** CI
+
+### What it does
+
+- Creates `codecov.yml` with coverage thresholds
+- Adds upload step to CI workflows
+
+---
+
+## Renovate
+
+**Automated dependency PRs** — keeps dependencies up-to-date automatically.
+
+[📖 Official Docs](https://docs.renovatebot.com/)
+
+- **ID:** `renovate`
+- **Category:** CI
+- **Conflicts with:** Dependabot
+
+### What it does
+
+- Creates `renovate.json` with recommended config
+- Groups related dependencies
+- Configures auto-merge for patch updates
+
+---
+
+## Dependabot
+
+**GitHub-native dependency updates** — simpler alternative to Renovate.
+
+[📖 Official Docs](https://docs.github.com/en/code-security/dependabot)
+
+- **ID:** `dependabot`
+- **Category:** CI
+- **Conflicts with:** Renovate
+
+### What it does
+
+- Creates `.github/dependabot.yml`
+- Configures weekly update checks for npm

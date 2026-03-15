@@ -1,0 +1,79 @@
+---
+title: Context Detection
+description: "How DevFlow automatically detects your package manager, TypeScript config, tech stack (React, Next.js, Vue, NestJS, SvelteKit), and monorepo setup from your project files."
+---
+
+## Overview
+
+The `detectProject()` function scans the project root to build a `ProjectContext`. This context is used by every module to generate appropriate configurations.
+
+```typescript
+async function detectProject(
+  root: string,
+  forcePm?: PackageManager,
+): Promise<ProjectContext>;
+```
+
+## Detection Logic
+
+### Package Manager Priority
+
+1. **`--pm` flag** — if provided, always wins
+2. **Lock files** (highest to lowest priority):
+   - `pnpm-lock.yaml` → pnpm
+   - `yarn.lock` → yarn
+   - `bun.lockb` → bun
+   - `package-lock.json` → npm
+3. **`packageManager` field** in `package.json` (e.g., `"packageManager": "pnpm@9.0.0"`)
+4. **Default** → npm
+
+### TypeScript Detection
+
+Simply checks for the existence of `tsconfig.json` in the project root.
+
+### Stack Detection
+
+Reads `dependencies` and `devDependencies` from `package.json`:
+
+```typescript
+if (deps.has('next'))           → 'nextjs'
+if (deps.has('nuxt'))           → 'nuxt'
+if (deps.has('@nestjs/core'))   → 'nestjs'
+if (deps.has('react'))          → 'react'
+if (deps.has('vue'))            → 'vue'
+if (deps.has('@sveltejs/kit'))  → 'sveltekit'
+else                            → 'node'
+```
+
+### Monorepo Detection
+
+| Signal                            | Result                                              |
+| --------------------------------- | --------------------------------------------------- |
+| `nx.json` exists                  | `repoType: 'monorepo'`, `monorepoTool: 'nx'`        |
+| `turbo.json` exists               | `repoType: 'monorepo'`, `monorepoTool: 'turborepo'` |
+| `pnpm-workspace.yaml` exists      | `repoType: 'monorepo'`, `monorepoTool: 'custom'`    |
+| `package.json` has `workspaces[]` | `repoType: 'monorepo'`, `monorepoTool: 'custom'`    |
+
+Workspace patterns are extracted from `pnpm-workspace.yaml` or the `workspaces` field.
+
+### Existing Files
+
+A set of relative file paths is collected from the project root (configurable depth) to support `detect()` checks without redundant `fs.existsSync()` calls.
+
+## Edge Cases
+
+### No package.json
+
+If `package.json` doesn't exist:
+
+- `hasPackageJson` is set to `false`
+- `stack` is `undefined`
+- Package manager defaults to npm
+- Modules handle this gracefully
+
+### Missing Dependencies
+
+If `package.json` exists but has no `dependencies`:
+
+- Stack defaults to `'node'`
+- TypeScript detection still works via `tsconfig.json`

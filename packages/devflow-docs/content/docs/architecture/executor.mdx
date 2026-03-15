@@ -1,0 +1,95 @@
+---
+title: Executor
+description: "How DevFlow's executor engine builds an action plan from selected modules and applies file writes, package installations, and npm script additions to your project."
+---
+
+## Overview
+
+The **Executor** is the engine that takes module actions and applies them to the project. It has three phases:
+
+1. **Build Plan** — aggregate actions from all selected modules
+2. **Print Plan** — show the user what will happen
+3. **Execute Plan** — apply the actions with progress spinners
+
+## Building the Plan
+
+```typescript
+async function buildPlan(
+  modules: DevFlowModule[],
+  ctx: ProjectContext,
+  optionsMap: Record<string, ModuleOptions>,
+): Promise<ExecutionPlan>;
+```
+
+For each module, `buildPlan` calls `module.plan(ctx, options)` and aggregates the results:
+
+- **filesToCreate** — deduplicated list of new files
+- **filesToUpdate** — deduplicated list of existing files to modify
+- **packagesToInstall** — deduplicated by package name
+- **scriptsToAdd** — keyed by script name
+- **commandsToRun** — ordered list
+- **actions** — per-module action arrays (for execution)
+
+### Deduplication
+
+If two modules create the same file or install the same package, the plan deduplicates automatically:
+
+```typescript
+plan.filesToCreate = [...new Set(plan.filesToCreate)];
+plan.packagesToInstall = plan.packagesToInstall.filter(
+  (p, i, arr) => arr.findIndex((q) => q.name === p.name) === i,
+);
+```
+
+## Execution Plan Structure
+
+```typescript
+interface ExecutionPlan {
+  filesToCreate: string[];
+  filesToUpdate: string[];
+  packagesToInstall: { name: string; dev: boolean }[];
+  scriptsToAdd: Record<string, string>;
+  commandsToRun: string[];
+  actions: { moduleId: string; actions: ModuleAction[] }[];
+}
+```
+
+## Executing the Plan
+
+The executor processes actions in order:
+
+1. **create-file** — write file via `writeFileSafe()` (respects `skipIfExists`)
+2. **update-file** — read existing content, apply transform, write back
+3. **merge-package-json** — deep-merge into `package.json`
+4. **add-script** — add or append script to `package.json`
+5. **install** — batch all packages into a single install command
+6. **run-command** — execute shell commands sequentially
+
+Each step shows a spinner with the current operation. Errors are caught and reported without stopping the entire execution.
+
+## Dry-Run Mode
+
+When dry-run is enabled:
+
+- `writeFileSafe()` logs "Would create ..." instead of writing
+- `mergePackageJson()` logs the merge payload
+- Package installation is skipped entirely
+- Shell commands are not executed
+- The plan is still built and displayed normally
+
+## Execution Summary
+
+After execution, a summary is generated:
+
+```typescript
+interface ExecutionSummary {
+  createdFiles: string[];
+  updatedFiles: string[];
+  installedPackages: string[];
+  addedScripts: Record<string, string>;
+  warnings: string[];
+  nextSteps: string[];
+}
+```
+
+This is printed to the user as a final report with any manual next steps.

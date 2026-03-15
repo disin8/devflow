@@ -1,0 +1,113 @@
+---
+title: Testing
+description: "Add Vitest, Jest, Playwright, Cypress, Testing Library, or MSW (Mock Service Worker) to your project with zero configuration. DevFlow installs packages, creates config files, and adds test scripts automatically."
+---
+
+## Vitest
+
+**Fast Vite-native test runner** — zero-config, TypeScript-first.
+
+[📖 Official Docs](https://vitest.dev/)
+
+- **ID:** `vitest`
+- **Category:** Testing
+- **Conflicts with:** Jest
+
+### What it does
+
+- Installs `vitest` and `@vitest/coverage-v8`
+- Creates `vitest.config.ts`
+- Adds `test`, `test:watch`, and `test:coverage` scripts
+
+---
+
+## Jest
+
+**Full-featured test runner** — the most popular testing framework.
+
+[📖 Official Docs](https://jestjs.io/)
+
+- **ID:** `jest`
+- **Category:** Testing
+- **Conflicts with:** Vitest
+
+### What it does
+
+- Installs `jest` and related packages (TypeScript support if needed)
+- Creates `jest.config.ts` or `jest.config.js`
+- Adds `test` and `test:coverage` scripts
+
+---
+
+## Testing Library
+
+**DOM testing utilities** — test React/Vue components by user behavior, not implementation.
+
+[📖 Official Docs](https://testing-library.com/)
+
+- **ID:** `testing-library`
+- **Category:** Testing
+- **Recommended for:** React, Vue, Next.js, Nuxt
+
+### What it does
+
+Stack-specific installation:
+
+| Stack           | Packages                                                                             |
+| --------------- | ------------------------------------------------------------------------------------ |
+| React / Next.js | `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event` |
+| Vue / Nuxt      | `@testing-library/vue`, `@testing-library/jest-dom`                                  |
+
+---
+
+## Playwright
+
+**Cross-browser E2E testing** — test your app in Chromium, Firefox, and WebKit.
+
+[📖 Official Docs](https://playwright.dev/)
+
+- **ID:** `playwright`
+- **Category:** Testing
+- **Conflicts with:** Cypress
+
+### What it does
+
+- Installs `@playwright/test`
+- Creates `playwright.config.ts`
+- Adds `test:e2e` and `test:e2e:ui` scripts
+- Creates an example test file
+
+---
+
+## Cypress
+
+**E2E & component testing** — developer-friendly testing with time-travel debugging.
+
+[📖 Official Docs](https://cypress.io/)
+
+- **ID:** `cypress`
+- **Category:** Testing
+- **Conflicts with:** Playwright
+
+### What it does
+
+- Installs `cypress`
+- Creates `cypress.config.ts`
+- Adds `cypress:open` and `cypress:run` scripts
+
+---
+
+## MSW (Mock Service Worker)
+
+**API mocking** — intercept network requests at the service worker level.
+
+[📖 Official Docs](https://mswjs.io/)
+
+- **ID:** `msw`
+- **Category:** Testing
+
+### What it does
+
+- Installs `msw`
+- Creates handler stubs in `src/mocks/`
+- Sets up browser and server handlers

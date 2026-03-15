@@ -1,0 +1,26 @@
+{
+  "name": "devflow-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for devflow CLI and documentation",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "pnpm -r run lint",
+    "clean": "pnpm -r run clean",
+    "changelog": "changelogen --output CHANGELOG.md",
+    "release": "changelogen --release --push"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "changelogen": "^0.5.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

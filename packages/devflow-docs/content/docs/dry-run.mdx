@@ -1,0 +1,62 @@
+---
+title: Dry Run Mode
+description: "Use DevFlow's --dry-run flag to safely preview every file it will create, every package it will install, and every script it will add — before touching your project."
+---
+
+## Overview
+
+Dry-run mode lets you see exactly what DevFlow would do — without modifying your project.
+
+```bash
+devflow --dry-run
+# or
+devflow --all --dry-run
+```
+
+## What Dry Run Shows
+
+In dry-run mode, DevFlow runs through the entire flow — detection, module selection, planning — but instead of writing files and installing packages, it logs what _would_ happen:
+
+```
+[dry-run] ℹ Would create .husky/pre-commit
+[dry-run] ℹ Would create .husky/commit-msg
+[dry-run] ℹ Would create commitlint.config.mjs
+[dry-run] ℹ Would create eslint.config.js
+[dry-run] ℹ Would merge into package.json: {
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "eslint": "^9.0.0"
+  }
+}
+[dry-run] ℹ Would add script "prepare": "husky"
+[dry-run] ℹ Would add script "lint": "eslint ."
+```
+
+## Use Cases
+
+- **Auditing** — see exactly what modules will generate before committing to changes
+- **CI validation** — run DevFlow in dry-run mode in CI to verify configs are up-to-date
+- **Learning** — understand what each module does without affecting your project
+- **Debugging** — troubleshoot why a module generates unexpected output
+
+## Combining with Other Flags
+
+```bash
+# Dry run the full preset
+devflow --all --dry-run
+
+# Dry run a single module
+devflow --only eslint --dry-run
+
+# Dry run with verbose output
+devflow --all --dry-run --verbose
+```
+
+## Programmatic Usage
+
+The dry-run flag sets a global state that all file utilities respect:
+
+- `writeFileSafe()` — logs instead of writing
+- `mergePackageJson()` — logs the merge payload
+- Package installation — skipped entirely
+- Commands — not executed

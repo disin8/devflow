@@ -1,0 +1,105 @@
+---
+title: Interactive Wizard
+description: "The DevFlow interactive wizard auto-detects your stack, guides you through selecting modules (Husky, ESLint, Vitest, CI/CD, Docker…), previews all changes, and sets everything up in one go."
+---
+
+## Overview
+
+The DevFlow wizard is a 6-step interactive flow that guides you through setting up your entire development workflow. Launch it with:
+
+```bash
+npx create-devflow
+```
+
+## Step 0: Auto-Detect
+
+DevFlow scans your project and reports what it found:
+
+```
+🔍 Detected project context:
+   Package manager: pnpm
+   TypeScript:      yes
+   Stack:           react
+   Repo type:       single
+```
+
+## Step 1: Repo Type
+
+Choose between:
+
+- **Single repository** — a standalone project
+- **Monorepo** — multiple packages in one repo
+
+If a monorepo is detected, DevFlow asks which tool you use (Nx, Turborepo, or workspaces).
+
+## Step 2: Stack Selection
+
+Confirm or change the detected stack:
+
+- React
+- Vue
+- Node.js
+- NestJS
+- Next.js
+- Nuxt
+- SvelteKit
+
+The stack determines which modules are recommended and how configs are generated (e.g., ESLint includes React plugins for React projects).
+
+## Step 3: Module Selection
+
+A grouped checkbox interface lets you pick modules from 10 categories:
+
+```
+Git & Commits
+  ☑ Husky – Git hooks made easy
+  ☑ lint-staged – Run linters on staged files
+  ☑ Commitlint – Enforce conventional commits
+  ☐ Commitizen – Interactive commit CLI
+  ☐ Lefthook – Fast Git hooks alternative
+
+Code Quality
+  ☑ ESLint – JS/TS linter (flat config)
+  ☑ Prettier – Opinionated formatter
+  ☐ Biome – Ultra-fast linter+formatter
+  ...
+```
+
+Modules recommended for your stack are pre-selected. Conflicts are detected automatically (e.g., ESLint+Biome, Husky+Lefthook, Vitest+Jest).
+
+## Step 4: Fine-Tuning
+
+Per-module options are collected:
+
+- **Commitlint** — Strict or Loose mode
+- **CI Provider** — GitHub Actions, GitLab CI, or both
+- **Husky hooks** — Which hooks to configure (pre-commit, commit-msg, pre-push)
+- **License** — MIT, Apache-2.0, or Proprietary
+
+## Step 5: Review Plan
+
+A complete execution plan is displayed:
+
+- Files to create
+- Files to update
+- Packages to install
+- Scripts to add
+- Commands to run
+
+You can confirm, cancel, or switch to dry-run mode.
+
+## Step 6: Execution
+
+DevFlow applies the plan with progress spinners:
+
+```
+  ✔ Created .husky/pre-commit
+  ✔ Created .husky/commit-msg
+  ✔ Created commitlint.config.mjs
+  ✔ Created eslint.config.js
+  ✔ Merged package.json
+  ✔ Installed 12 packages
+  ✔ Added 4 scripts
+```
+
+A final summary shows everything that was done, plus any next steps you should take manually.

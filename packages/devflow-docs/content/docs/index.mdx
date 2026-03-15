@@ -1,0 +1,56 @@
+---
+title: Introduction
+description: "DevFlow (npx create-devflow) is a CLI that automatically sets up Husky, ESLint, Prettier, Vitest, GitHub Actions CI/CD, Docker, Commitlint, and more in any JavaScript/TypeScript project — in under 2 minutes."
+---
+
+## What is DevFlow?
+
+**DevFlow** (`create-devflow`) is a CLI utility that bootstraps a complete development workflow in any JavaScript/TypeScript repository. It sets up everything you need — Git hooks, commit conventions, linting, formatting, testing, CI/CD, releases, security scanning, Docker, and monorepo support — in minutes instead of hours.
+
+## Why DevFlow?
+
+Setting up a professional development workflow from scratch typically involves:
+
+- Researching best practices for each tool
+- Installing and configuring 10–20+ packages
+- Writing config files that work together
+- Ensuring tools don't conflict with each other
+- Adapting everything for your specific stack
+
+DevFlow automates all of this with a single command.
+
+## Key Features
+
+- **Interactive Wizard** — step-by-step setup with checkboxes and confirmations
+- **40+ Modules** across 10 categories (Git, Quality, Testing, CI/CD, Releases, Security, DX, Docker, Docs, Monorepo)
+- **Stack-Aware** — generates configs tailored to React, Vue, Next.js, Nuxt, NestJS, SvelteKit, or plain Node.js
+- **Idempotent** — safe to re-run; won't overwrite existing configurations
+- **Dry-Run Mode** — preview every file and package change before applying
+- **Preset Shortcuts** — Minimal, Recommended, or Full configs per stack
+- **Direct Commands** — skip the wizard with flags like `--husky`, `--lint`, `--ci github`
+- **Monorepo Support** — Nx, Turborepo, pnpm/yarn workspaces
+
+## Quick Example
+
+```bash
+npx create-devflow
+```
+
+The wizard will auto-detect your project context (package manager, TypeScript, stack, monorepo) and guide you through module selection. When done, DevFlow generates all config files, installs packages, and adds scripts to your `package.json`.
+
+## Next Steps
+
+<Cards>
+  <Card title="Installation" href="/docs/installation">
+    Install DevFlow globally or use it with npx.
+  </Card>
+  <Card title="Quick Start" href="/docs/quick-start">
+    Get up and running in under 2 minutes.
+  </Card>
+  <Card title="Module Catalogue" href="/docs/modules">
+    Browse all 40+ available modules.
+  </Card>
+  <Card title="CLI Reference" href="/docs/cli-reference">
+    Full list of flags and commands.
+  </Card>
+</Cards>

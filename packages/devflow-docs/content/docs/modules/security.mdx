@@ -1,0 +1,68 @@
+---
+title: Security
+description: "Automatically add npm audit, Gitleaks secret scanning, Trivy vulnerability scanner, and OSV-Scanner to your Node.js project and CI pipeline. Prevent committing secrets and vulnerable dependencies."
+---
+
+## npm audit
+
+**Dependency vulnerability check** — runs `npm audit` as part of your workflow.
+
+[📖 Official Docs](https://docs.npmjs.com/cli/v9/commands/npm-audit)
+
+- **ID:** `audit`
+- **Category:** Security
+
+### What it does
+
+- Adds `audit` and `audit:fix` scripts
+- Optionally adds CI step for vulnerability checking
+
+---
+
+## Gitleaks
+
+**Secret scanning** — prevents committing API keys, tokens, and other secrets.
+
+[📖 Official Docs](https://gitleaks.io/)
+
+- **ID:** `gitleaks`
+- **Category:** Security
+
+### What it does
+
+- Creates `.gitleaks.toml` configuration
+- Adds a GitHub Actions workflow (`.github/workflows/gitleaks.yml`)
+- Configures rules for common secret patterns
+
+---
+
+## Trivy
+
+**Container & filesystem vulnerability scanner** — scans Docker images and project files.
+
+[📖 Official Docs](https://aquasecurity.github.io/trivy/)
+
+- **ID:** `trivy`
+- **Category:** Security
+
+### What it does
+
+- Creates a `trivy.yaml` configuration
+- Adds CI workflow for Trivy scanning
+- Configures severity thresholds
+
+---
+
+## OSV-Scanner
+
+**OSS vulnerability database** — checks dependencies against the OSV (Open Source Vulnerability) database.
+
+[📖 Official Docs](https://google.github.io/osv-scanner/)
+
+- **ID:** `osv-scanner`
+- **Category:** Security
+
+### What it does
+
+- Adds OSV-Scanner GitHub Actions workflow
+- Configures scanning for `package-lock.json` / `pnpm-lock.yaml`

@@ -1,0 +1,46 @@
+---
+title: Module Catalogue
+description: "Browse all 40+ DevFlow modules: Husky, lint-staged, Commitlint, ESLint, Prettier, Biome, Vitest, Jest, Playwright, GitHub Actions, GitLab CI, Docker, Turborepo, Nx, semantic-release, and more. One command to set up any of them."
+---
+
+## Overview
+
+DevFlow ships with **40+ modules** organized into **10 categories**. Each module is a self-contained unit that can detect existing configuration and generate a plan of actions (files to create, packages to install, scripts to add).
+
+## Categories
+
+| Category                              | Modules | Description                                 |
+| ------------------------------------- | ------- | ------------------------------------------- |
+| [Git & Commits](/docs/modules/git)    | 7       | Git hooks, commit conventions, changelogs   |
+| [Code Quality](/docs/modules/quality) | 8       | Linting, formatting, type checking          |
+| [Testing](/docs/modules/testing)      | 6       | Unit tests, E2E, mocking                    |
+| [CI/CD](/docs/modules/ci-cd)          | 5       | Continuous integration & dependency updates |
+| [Releases](/docs/modules/releases)    | 4       | Versioning, changelogs, publishing          |
+| [Security](/docs/modules/security)    | 4       | Vulnerability scanning, secret detection    |
+| [Dev Environment](/docs/modules/dx)   | 5       | Node version, env vars, editor settings     |
+| [Docker](/docs/modules/docker)        | 3       | Containerization                            |
+| [Documentation](/docs/modules/docs)   | 5       | README, contributing guides, license        |
+| [Monorepo](/docs/modules/monorepo)    | 3       | Build systems, workspace config             |
+
+## Conflict Detection
+
+Some modules are mutually exclusive. DevFlow automatically detects conflicts:
+
+| Conflict Pair         | Reason                         |
+| --------------------- | ------------------------------ |
+| ESLint ↔ Biome        | Biome replaces ESLint          |
+| Prettier ↔ Biome      | Biome replaces Prettier        |
+| Husky ↔ Lefthook      | Both manage Git hooks          |
+| Vitest ↔ Jest         | Both are test runners          |
+| Playwright ↔ Cypress  | Both are E2E frameworks        |
+| Renovate ↔ Dependabot | Both handle dependency updates |
+
+If you select conflicting modules, the wizard asks you to resolve the conflict before proceeding.
+
+## Dependency Resolution
+
+Some modules depend on others. DevFlow automatically adds dependencies:
+
+- **lint-staged** depends on **Husky** (needs Git hooks to trigger)
+
+Dependencies are added before the module that requires them during plan execution.

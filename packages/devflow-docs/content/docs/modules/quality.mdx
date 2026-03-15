@@ -1,0 +1,194 @@
+---
+title: Code Quality
+description: "Automatically set up ESLint, Prettier, or Biome in any JavaScript/TypeScript project. DevFlow generates stack-aware configs for React, Next.js, Vue, NestJS, and plain TypeScript — no manual configuration needed."
+---
+
+## ESLint
+
+**Pluggable JavaScript/TypeScript linter** — uses the modern flat config format.
+
+[📖 Official Docs](https://eslint.org/)
+
+- **ID:** `eslint`
+- **Category:** Quality
+- **Conflicts with:** Biome
+
+### What it does
+
+- Installs `eslint`, `@eslint/js`, and stack-specific plugins
+- Creates `eslint.config.js` with flat config
+- Adds `lint` and `lint:fix` scripts
+
+### Stack-Aware Configuration
+
+| Stack           | Additional Packages                                | Config Additions       |
+| --------------- | -------------------------------------------------- | ---------------------- |
+| TypeScript      | `typescript-eslint`                                | TS recommended rules   |
+| React / Next.js | `eslint-plugin-react`, `eslint-plugin-react-hooks` | JSX rules, hooks rules |
+| Vue / Nuxt      | `eslint-plugin-vue`                                | Vue recommended rules  |
+
+### Generated Config Example (React + TypeScript)
+
+```javascript
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { react, "react-hooks": reactHooks },
+    rules: {
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  {
+    ignores: ["dist/", "node_modules/", "build/", ".next/", ".nuxt/"],
+  },
+];
+```
+
+---
+
+## Prettier
+
+**Opinionated code formatter** — enforces consistent code style.
+
+[📖 Official Docs](https://prettier.io/)
+
+- **ID:** `prettier`
+- **Category:** Quality
+- **Conflicts with:** Biome
+
+### What it does
+
+- Installs `prettier`
+- Creates `.prettierrc` and `.prettierignore`
+- Adds `format` and `format:check` scripts
+
+---
+
+## Biome
+
+**Ultra-fast linter & formatter** — a Rust-based all-in-one replacement for ESLint + Prettier.
+
+[📖 Official Docs](https://biomejs.dev/)
+
+- **ID:** `biome`
+- **Category:** Quality
+- **Conflicts with:** ESLint, Prettier
+
+### What it does
+
+- Installs `@biomejs/biome`
+- Creates `biome.json` with linter, formatter, and import organizer enabled
+- Adds `lint`, `format`, and `check` scripts
+
+### Generated Config
+
+```json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": { "enabled": true },
+  "linter": {
+    "enabled": true,
+    "rules": { "recommended": true }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "files": {
+    "ignore": [
+      "dist/",
+      "build/",
+      "node_modules/",
+      "coverage/",
+      ".next/",
+      ".nuxt/"
+    ]
+  }
+}
+```
+
+---
+
+## EditorConfig
+
+**Consistent editor settings** — ensures all contributors use the same indentation, line endings, etc.
+
+[📖 Official Docs](https://editorconfig.org/)
+
+- **ID:** `editorconfig`
+- **Category:** Quality
+
+### What it does
+
+- Creates `.editorconfig` with sensible defaults (2-space indent, UTF-8, LF line endings)
+
+---
+
+## TypeScript
+
+**Strict TypeScript configuration** — adds a strict `tsconfig.json` and a typecheck script.
+
+[📖 Official Docs](https://www.typescriptlang.org/)
+
+- **ID:** `typescript`
+- **Category:** Quality
+
+### What it does
+
+- Creates or updates `tsconfig.json` with strict settings
+- Adds a `typecheck` script (`tsc --noEmit`)
+
+---
+
+## Stylelint
+
+**CSS/SCSS linter** — enforces consistent styles in CSS, SCSS, and CSS-in-JS.
+
+[📖 Official Docs](https://stylelint.io/)
+
+- **ID:** `stylelint`
+- **Category:** Quality
+
+---
+
+## markdownlint
+
+**Markdown linter** — enforces consistent Markdown style.
+
+[📖 Official Docs](https://github.com/DavidAnson/markdownlint)
+
+- **ID:** `markdownlint`
+- **Category:** Quality
+
+### What it does
+
+- Installs `markdownlint-cli2`
+- Creates `.markdownlint-cli2.jsonc` config
+- Adds a `lint:md` script
+
+---
+
+## cspell
+
+**Spell checker for code** — catches typos in source code, comments, and docs.
+
+[📖 Official Docs](https://cspell.org/)
+
+- **ID:** `cspell`
+- **Category:** Quality
+
+### What it does
+
+- Installs `cspell`
+- Creates `cspell.json` with tech dictionaries enabled
+- Adds a `spell` script

@@ -1,0 +1,103 @@
+---
+title: Dev Environment
+description: "Automate dev environment setup: pin Node.js version with .nvmrc/Volta, create .env.example with documented variables, configure shared VSCode settings and recommended extensions, and add Dev Container support."
+---
+
+## .nvmrc / Volta
+
+**Pin Node.js version** — ensures all developers use the same Node.js version.
+
+[📖 Official Docs](https://github.com/nvm-sh/nvm)
+
+- **ID:** `nvmrc`
+- **Category:** DX
+
+### What it does
+
+- Creates `.nvmrc` with the current Node.js major version
+- Works with nvm, fnm, Volta, and other version managers
+
+---
+
+## .env.example
+
+**Document environment variables** — provides a template for required env vars.
+
+[📖 Official Docs](https://github.com/motdotla/dotenv)
+
+- **ID:** `dotenv`
+- **Category:** DX
+
+### What it does
+
+- Creates `.env.example` with common variables
+- Adds `.env` and `.env.local` to `.gitignore`
+
+---
+
+## VSCode Settings
+
+**Shared editor configuration** — configures VSCode extensions and settings for the team.
+
+[📖 Official Docs](https://code.visualstudio.com/docs)
+
+- **ID:** `vscode`
+- **Category:** DX
+
+### What it does
+
+- Creates `.vscode/settings.json` with format-on-save, ESLint/Prettier integration
+- Creates `.vscode/extensions.json` with recommended extensions for the stack
+
+---
+
+## Dev Container
+
+**VS Code Dev Container** — containerized development environment.
+
+[📖 Official Docs](https://containers.dev/)
+
+- **ID:** `devcontainer`
+- **Category:** DX
+
+### What it does
+
+- Creates `.devcontainer/devcontainer.json`
+- Configures Node.js version, extensions, and port forwarding
+
+---
+
+## Makefile
+
+**Developer shortcuts** — common tasks as make targets.
+
+[📖 Official Docs](https://www.gnu.org/software/make/)
+
+- **ID:** `makefile`
+- **Category:** DX
+
+### What it does
+
+Creates a `Makefile` with targets:
+
+```makefile
+.PHONY: dev build test lint format clean
+
+dev:
+	npm run dev
+
+build:
+	npm run build
+
+test:
+	npm test
+
+lint:
+	npm run lint
+
+format:
+	npm run format
+
+clean:
+	rm -rf dist node_modules
+```

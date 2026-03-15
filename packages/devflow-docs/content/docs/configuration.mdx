@@ -1,0 +1,68 @@
+---
+title: Configuration
+description: "How DevFlow auto-detects your package manager (npm, pnpm, yarn, bun), TypeScript, tech stack (React, Next.js, Vue, NestJS), and monorepo setup. Override any detected value with CLI flags."
+---
+
+## Project Detection
+
+DevFlow reads your project structure to build a `ProjectContext` — used by every module to generate appropriate configs.
+
+### Package Manager
+
+Detection priority:
+
+1. **CLI flag** — `--pm pnpm` always wins
+2. **Lock file** — `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `bun.lockb` → bun, `package-lock.json` → npm
+3. **packageManager field** — in `package.json` (e.g., `"packageManager": "pnpm@9.0.0"`)
+4. **Default** — npm
+
+### TypeScript
+
+Detected by presence of `tsconfig.json` in the project root. When TypeScript is detected:
+
+- ESLint adds `typescript-eslint`
+- Vitest/Jest include TypeScript support
+- CI workflows add a typecheck step
+
+### Stack Detection
+
+DevFlow inspects `dependencies` and `devDependencies` in `package.json`:
+
+| Dependency            | Detected Stack |
+| --------------------- | -------------- |
+| `next`                | Next.js        |
+| `nuxt`                | Nuxt           |
+| `@nestjs/core`        | NestJS         |
+| `react`               | React          |
+| `vue`                 | Vue            |
+| `@sveltejs/kit`       | SvelteKit      |
+| _(none of the above)_ | Node.js        |
+
+### Monorepo Detection
+
+| File/Field                      | Monorepo Tool                |
+| ------------------------------- | ---------------------------- |
+| `nx.json`                       | Nx                           |
+| `turbo.json`                    | Turborepo                    |
+| `pnpm-workspace.yaml`           | Custom (pnpm workspaces)     |
+| `package.json` → `workspaces[]` | Custom (npm/yarn workspaces) |
+
+## Overriding Detection
+
+You can override any detected value via CLI flags:
+
+```bash
+# Force package manager
+devflow --pm pnpm
+
+# Force CI provider
+devflow --ci gitlab
+```
+
+## Existing Config Handling
+
+DevFlow is **idempotent**. Every module's `detect()` method checks for existing configurations:
+
+- If a config file already exists (e.g., `eslint.config.js`), the module reports `alreadyConfigured: true`
+- The wizard shows this status, letting you decide whether to skip or overwrite
+- File creation actions use `skipIfExists: true` by default

@@ -1,0 +1,101 @@
+---
+title: CLI Reference
+description: "Full DevFlow CLI reference: use --husky, --lint, --ci github, --docker, --all, --yes, --dry-run, --pm pnpm and more to add any tool to your project without the interactive wizard."
+---
+
+## Synopsis
+
+```bash
+devflow [options]
+create-devflow [options]
+npx create-devflow [options]
+```
+
+## Options
+
+### General
+
+| Flag              | Description            |
+| ----------------- | ---------------------- |
+| `--help`, `-h`    | Show help message      |
+| `--version`, `-V` | Show version number    |
+| `--verbose`       | Enable verbose logging |
+
+### Execution Control
+
+| Flag             | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `--dry-run`      | Preview all changes without applying them         |
+| `--yes`, `-y`    | Skip all confirmations                            |
+| `--skip-install` | Create config files only, don't run `npm install` |
+
+### Project Override
+
+| Flag              | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| `--pm <manager>`  | Force package manager (`npm`, `yarn`, `pnpm`, `bun`) |
+| `--ci <provider>` | CI provider (`github`, `gitlab`, `both`)             |
+
+### Presets
+
+| Flag    | Description                                         |
+| ------- | --------------------------------------------------- |
+| `--all` | Apply the recommended preset for the detected stack |
+
+### Direct Module Flags
+
+Skip the wizard and apply specific modules:
+
+| Flag               | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `--only <module>`  | Setup a single module by ID                                      |
+| `--husky`          | Git hooks (Husky + lint-staged + Commitlint)                     |
+| `--lint`           | ESLint + Prettier + EditorConfig                                 |
+| `--test`           | Vitest test runner                                               |
+| `--ci <provider>`  | CI workflow for the specified provider                           |
+| `--release <tool>` | Release tooling (`release-it`, `changesets`, `semantic-release`) |
+| `--docker`         | Dockerfile + docker-compose + .dockerignore                      |
+| `--docs`           | README, CONTRIBUTING, LICENSE, etc.                              |
+| `--security`       | npm audit + Gitleaks                                             |
+
+### Monorepo
+
+| Flag                     | Description                 |
+| ------------------------ | --------------------------- |
+| `--scope <name>`         | Run on a specific workspace |
+| `--workspaces <pattern>` | Workspace glob pattern      |
+
+## Examples
+
+```bash
+# Interactive wizard
+devflow
+
+# Full recommended setup, no prompts
+devflow --all --yes
+
+# Preview what would happen
+devflow --all --dry-run
+
+# Only Git hooks
+devflow --husky
+
+# Lint + format tools
+devflow --lint
+
+# CI for GitHub with pnpm
+devflow --ci github --pm pnpm
+
+# Single module setup
+devflow --only vitest
+
+# Full setup for monorepo, skip install
+devflow --all --yes --skip-install
+```
+
+## Exit Codes
+
+| Code | Meaning                |
+| ---- | ---------------------- |
+| `0`  | Success                |
+| `1`  | Error during execution |

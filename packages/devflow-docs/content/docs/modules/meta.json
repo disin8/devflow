@@ -1,0 +1,16 @@
+{
+  "title": "Modules",
+  "pages": [
+    "index",
+    "git",
+    "quality",
+    "testing",
+    "ci-cd",
+    "releases",
+    "security",
+    "dx",
+    "docker",
+    "docs",
+    "monorepo"
+  ]
+}

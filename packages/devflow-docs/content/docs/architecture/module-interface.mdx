@@ -1,0 +1,162 @@
+---
+title: Module Interface
+description: "Technical reference for the DevFlowModule interface — learn how every module detects existing configs, generates an action plan, and integrates with the wizard and executor."
+
+---
+
+## Interface Definition
+
+Every module in DevFlow implements the `DevFlowModule` interface:
+
+```typescript
+interface DevFlowModule {
+  /** Unique identifier, e.g. "husky", "eslint" */
+  id: string;
+
+  /** Human-readable name */
+  name: string;
+
+  /** Short description shown in wizard checkboxes */
+  description: string;
+
+  /** Category for grouping */
+  category: Category;
+
+  /** Stacks for which this module is pre-selected */
+  recommendedFor?: Stack[];
+
+  /** Module IDs that conflict (mutually exclusive) */
+  conflicts?: string[];
+
+  /** Module IDs that must be installed first */
+  dependsOn?: string[];
+
+  /** Check if the module is applicable and/or already configured */
+  detect(ctx: ProjectContext): Promise<ModuleDetection>;
+
+  /** Generate planned actions without side effects */
+  plan(ctx: ProjectContext, options: ModuleOptions): Promise<ModuleAction[]>;
+}
+```
+
+## Categories
+
+```typescript
+type Category =
+  | "git" // Git & Commits
+  | "quality" // Code Quality
+  | "testing" // Testing
+  | "ci" // CI/CD
+  | "release" // Releases
+  | "security" // Security
+  | "dx" // Dev Environment
+  | "docker" // Docker
+  | "docs" // Documentation
+  | "monorepo"; // Monorepo
+```
+
+## Detection Result
+
+```typescript
+interface ModuleDetection {
+  /** Is this module applicable for the current project? */
+  applicable: boolean;
+
+  /** Is it already configured? */
+  alreadyConfigured: boolean;
+
+  /** Human-readable reason */
+  reason?: string;
+}
+```
+
+## Action Types
+
+Modules return an array of `ModuleAction` — a discriminated union:
+
+### CreateFileAction
+
+```typescript
+{
+  type: "create-file",
+  path: "eslint.config.js",
+  content: "export default [...];",
+  skipIfExists: true
+}
+```
+
+### InstallAction
+
+```typescript
+{
+  type: "install",
+  dev: true,
+  packages: ["eslint", "@eslint/js"]
+}
+```
+
+### AddScriptAction
+
+```typescript
+{
+  type: "add-script",
+  name: "lint",
+  command: "eslint .",
+  append: false
+}
+```
+
+### MergePackageJsonAction
+
+```typescript
+{
+  type: "merge-package-json",
+  merge: {
+    "lint-staged": {
+      "*.{ts,tsx}": ["eslint --fix", "prettier --write"]
+    }
+  }
+}
+```
+
+### UpdateFileAction
+
+```typescript
+{
+  type: "update-file",
+  path: ".gitignore",
+  description: "Add coverage/ to .gitignore",
+  updater: (existing) => existing + "\ncoverage/\n"
+}
+```
+
+### RunCommandAction
+
+```typescript
+{
+  type: "run-command",
+  command: "npx playwright install",
+  description: "Install Playwright browsers"
+}
+```
+
+## Project Context
+
+Every module receives a `ProjectContext`:
+
+```typescript
+interface ProjectContext {
+  root: string; // absolute path
+  pm: PackageManager; // "npm" | "yarn" | "pnpm" | "bun"
+  hasPackageJson: boolean;
+  hasTypeScript: boolean;
+  repoType: RepoType; // "single" | "monorepo"
+  monorepoTool?: MonorepoTool;
+  workspacePatterns: string[];
+  stack?: Stack;
+  existingFiles: Set<string>;
+  packageJson?: Record<string, unknown>;
+}
+```
+
+Modules use this context to make stack-aware decisions — for example, ESLint adds React plugins when `ctx.stack === 'react'`.

@@ -1,0 +1,75 @@
+---
+title: Installation
+description: "Install DevFlow with npx create-devflow (no global install needed), or add it globally with npm/pnpm/yarn/bun. Works with any Node.js >= 18 project."
+---
+
+## Requirements
+
+- **Node.js** >= 18.0.0
+- A JavaScript/TypeScript project with a `package.json` (or DevFlow will create one)
+
+## Using npx (Recommended)
+
+No installation required — run directly:
+
+```bash
+npx create-devflow
+```
+
+This always fetches the latest version.
+
+## Global Installation
+
+```bash
+npm install -g create-devflow
+```
+
+Then use it anywhere:
+
+```bash
+devflow
+# or
+create-devflow
+```
+
+## Project-Local Installation
+
+If you want to pin the version in your project:
+
+```bash
+npm install -D create-devflow
+```
+
+Add a script to `package.json`:
+
+```json
+{
+  "scripts": {
+    "devflow": "devflow"
+  }
+}
+```
+
+## Verify Installation
+
+```bash
+devflow --version
+devflow --help
+```
+
+## Package Managers
+
+DevFlow works with all major package managers:
+
+| Package Manager | Install Command           |
+| --------------- | ------------------------- |
+| **npm**         | `npx create-devflow`      |
+| **pnpm**        | `pnpm dlx create-devflow` |
+| **yarn**        | `yarn dlx create-devflow` |
+| **bun**         | `bunx create-devflow`     |
+
+DevFlow auto-detects your package manager from lock files, but you can override it:
+
+```bash
+devflow --pm pnpm
+```

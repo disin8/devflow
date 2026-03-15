@@ -1,0 +1,55 @@
+---
+title: Monorepo
+description: "Set up Turborepo, Nx, or pnpm/yarn/npm workspaces for your monorepo automatically. Includes shared tsconfig.base.json, build caching, and task pipeline configuration out of the box."
+---
+
+## Nx
+
+**Smart build system with caching** — computation caching, task orchestration, and dependency graph.
+
+[📖 Official Docs](https://nx.dev/)
+
+- **ID:** `nx`
+- **Category:** Monorepo
+
+### What it does
+
+- Installs `nx`
+- Creates `nx.json` with caching and task configuration
+- Configures affected commands for CI
+
+---
+
+## Turborepo
+
+**High-performance build system** — incremental builds with remote caching.
+
+[📖 Official Docs](https://turbo.build/)
+
+- **ID:** `turborepo`
+- **Category:** Monorepo
+
+### What it does
+
+- Installs `turbo`
+- Creates `turbo.json` with pipeline configuration
+- Configures task dependencies (build → test, lint in parallel)
+
+---
+
+## Workspaces
+
+**Workspace config + shared TypeScript** — configures pnpm/yarn/npm workspaces with shared settings.
+
+[📖 Official Docs](https://pnpm.io/workspaces)
+
+- **ID:** `workspaces`
+- **Category:** Monorepo
+
+### What it does
+
+- Configures `workspaces` field in `package.json` (or `pnpm-workspace.yaml` for pnpm)
+- Creates shared `tsconfig.base.json` for TypeScript monorepos
+- Sets up workspace-aware scripts
+
+This module is automatically added to all monorepo presets.

@@ -1,0 +1,9 @@
+{
+  "title": "Architecture",
+  "pages": [
+    "overview",
+    "module-interface",
+    "executor",
+    "context-detection"
+  ]
+}

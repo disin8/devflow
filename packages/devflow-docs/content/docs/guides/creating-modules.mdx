@@ -1,0 +1,132 @@
+---
+title: Creating Modules
+description: "Step-by-step guide to creating a custom DevFlow module: implement detection logic, define the action plan, add wizard options, and register the module in the catalogue."
+---
+
+## Quick Start
+
+Every module is a single TypeScript file that exports a `DevFlowModule` object.
+
+## Template
+
+Create a new file in the appropriate category directory (e.g., `src/modules/quality/my-tool.ts`):
+
+```typescript
+import type {
+  DevFlowModule,
+  ModuleAction,
+  ProjectContext,
+} from "../../core/types.js";
+import { fileExists } from "../../core/fs-utils.js";
+
+const myToolModule: DevFlowModule = {
+  id: "my-tool",
+  name: "My Tool",
+  description: "Short description for the wizard checkbox",
+  category: "quality",
+  recommendedFor: ["react", "vue", "node"],
+  conflicts: [], // module IDs that conflict
+  dependsOn: [], // module IDs that must be installed first
+
+  async detect(ctx: ProjectContext) {
+    const hasConfig = fileExists(ctx.root, "my-tool.config.js");
+    return {
+      applicable: true,
+      alreadyConfigured: hasConfig,
+      reason: hasConfig ? "My Tool already configured" : undefined,
+    };
+  },
+
+  async plan(ctx: ProjectContext, opts) {
+    const actions: ModuleAction[] = [];
+
+    // 1. Install packages
+    actions.push({
+      type: "install",
+      dev: true,
+      packages: ["my-tool"],
+    });
+
+    // 2. Create config file
+    const config = generateConfig(ctx);
+    actions.push({
+      type: "create-file",
+      path: "my-tool.config.js",
+      content: config,
+      skipIfExists: true,
+    });
+
+    // 3. Add npm script
+    actions.push({
+      type: "add-script",
+      name: "my-tool",
+      command: "my-tool .",
+    });
+
+    return actions;
+  },
+};
+
+function generateConfig(ctx: ProjectContext): string {
+  // Use ctx.stack, ctx.hasTypeScript, ctx.pm to customize
+  return `export default {
+  // configuration here
+};
+`;
+}
+
+export default myToolModule;
+```
+
+## Register the Module
+
+Add your module to `src/modules/registry.ts`:
+
+```typescript
+import myToolModule from "./quality/my-tool.js";
+
+export const ALL_MODULES: DevFlowModule[] = [
+  // ... existing modules
+  myToolModule,
+];
+```
+
+## Add to Presets (Optional)
+
+If your module should be included in presets, add its ID to the appropriate arrays in `src/modules/presets.ts`.
+
+## Writing Tests
+
+Create a test file next to the module or in the test directory:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import myToolModule from "../modules/quality/my-tool.js";
+import { stubContext } from "../test/helpers.js";
+
+describe("my-tool.detect()", () => {
+  it("returns alreadyConfigured=false without config", async () => {
+    const ctx = stubContext();
+    const result = await myToolModule.detect(ctx);
+    expect(result.alreadyConfigured).toBe(false);
+  });
+});
+
+describe("my-tool.plan()", () => {
+  it("installs my-tool package", async () => {
+    const ctx = stubContext();
+    const actions = await myToolModule.plan(ctx, {});
+    const install = actions.find((a) => a.type === "install") as any;
+    expect(install.packages).toContain("my-tool");
+  });
+});
+```
+
+## Best Practices
+
+1. **Keep `plan()` pure** — no file system access, no side effects
+2. **Use `fileExists()` in `detect()`** — check common config file locations
+3. **Set `skipIfExists: true`** — make your module idempotent
+4. **Respect the context** — use `ctx.stack`, `ctx.pm`, `ctx.hasTypeScript` for stack-aware configs
+5. **Declare conflicts** — if your tool replaces another, add it to `conflicts[]`
+6. **Declare dependencies** — if your tool needs another module, add it to `dependsOn[]`

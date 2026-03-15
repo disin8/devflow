@@ -1,0 +1,114 @@
+---
+title: Contributing
+description: "How to contribute to DevFlow — set up your local dev environment, write or fix modules, run tests, and submit a pull request to the open-source repository."
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- npm (or pnpm/yarn)
+- Git
+
+### Setup
+
+```bash
+git clone https://github.com/disin8/devflow.git
+cd devflow
+npm install
+```
+
+### Development
+
+```bash
+# Build
+npm run build
+
+# Watch mode
+npm run dev
+
+# Type checking
+npm run typecheck
+
+# Run tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Test the CLI
+node bin/devflow.js --help
+node bin/devflow.js --dry-run
+```
+
+## Project Structure
+
+```
+src/
+├── cli.ts              # CLI entry point (Commander)
+├── index.ts            # Public exports
+├── core/               # Core utilities (types, fs, logger, executor)
+├── modules/            # All 40+ modules (one file each)
+│   ├── registry.ts     # Module catalogue
+│   └── presets.ts      # Preset configurations
+├── wizard/             # Interactive wizard
+└── test/               # Test helpers
+```
+
+## Commit Convention
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add new module for X
+fix: correct eslint config for Vue
+docs: update module catalogue
+test: add tests for executor
+chore: bump dependencies
+```
+
+## Adding a New Module
+
+1. Create module file in the appropriate category directory
+2. Implement `DevFlowModule` interface (see [Creating Modules](/docs/guides/creating-modules))
+3. Register in `src/modules/registry.ts`
+4. Add to presets if appropriate (`src/modules/presets.ts`)
+5. Write tests
+6. Update documentation
+
+## Testing
+
+Tests use **Vitest** with temporary directory isolation:
+
+```bash
+# Run all tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# With coverage
+npm run test:coverage
+```
+
+### Test Structure
+
+- `src/core/*.test.ts` — core utility tests
+- `src/modules/*.test.ts` — module registry, presets, and integration tests
+- `src/test/helpers.ts` — shared test utilities (temp dirs, stubs)
+
+## Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch (`feat/my-feature`)
+3. Make your changes with tests
+4. Run `npm test` and `npm run typecheck`
+5. Submit a PR against `main`
+
+## Code Style
+
+- TypeScript strict mode
+- ESM imports with `.js` extensions
+- Functional style — pure functions where possible
+- Actions as data — modules return action objects, not side effects

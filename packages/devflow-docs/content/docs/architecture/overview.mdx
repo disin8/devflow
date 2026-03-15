@@ -1,0 +1,97 @@
+---
+title: Architecture Overview
+description: "Deep dive into DevFlow's internal architecture — context detection, module system, interactive wizard, and the executor engine that writes files and installs packages."
+---
+
+## Project Structure
+
+```
+src/
+├── cli.ts                 # Commander CLI entry point
+├── index.ts               # Main exports
+├── core/
+│   ├── types.ts           # All TypeScript types & interfaces
+│   ├── logger.ts          # Coloured logging, dry-run state
+│   ├── fs-utils.ts        # File I/O with dry-run awareness
+│   ├── package-json.ts    # Deep merge, mergePackageJson, addScript
+│   ├── context.ts         # Project detection (PM, TS, stack, monorepo)
+│   └── executor.ts        # buildPlan, executePlan, printPlan
+├── modules/
+│   ├── registry.ts        # Module catalogue, conflict detection, resolution
+│   ├── presets.ts          # Preset configurations per stack/level
+│   ├── git/               # Husky, lint-staged, commitlint, etc.
+│   ├── quality/           # ESLint, Prettier, Biome, etc.
+│   ├── testing/           # Vitest, Jest, Playwright, etc.
+│   ├── ci/                # GitHub Actions, GitLab CI, etc.
+│   ├── release/           # Release-it, Changesets, etc.
+│   ├── security/          # Audit, Gitleaks, Trivy, etc.
+│   ├── dx/                # .nvmrc, .env, VSCode, etc.
+│   ├── docker/            # Dockerfile, compose, .dockerignore
+│   ├── docs/              # README, CONTRIBUTING, LICENSE, etc.
+│   └── monorepo/          # Nx, Turborepo, Workspaces
+├── wizard/
+│   └── index.ts           # 6-step interactive wizard
+└── test/
+    └── helpers.ts          # Shared test utilities
+```
+
+## Data Flow
+
+```
+CLI (Commander)
+  │
+  ├── Flags? ──→ Resolve modules directly
+  │                │
+  └── No flags ──→ Wizard (6 steps)
+                    │
+                    ▼
+              detectProject(root)
+                    │
+                    ▼
+              Module selection + options
+                    │
+                    ▼
+              resolveModules(ids)   ── dependency expansion
+                    │
+                    ▼
+              detectConflicts(ids)  ── conflict check
+                    │
+                    ▼
+              buildPlan(modules, ctx, options)
+                    │
+                    ▼
+              printPlan(plan)       ── show to user
+                    │
+                    ▼
+              executePlan(plan, ctx) ── apply changes
+                    │
+                    ▼
+              printSummary(summary)
+```
+
+## Design Principles
+
+### Pure Data Actions
+
+Modules don't perform side effects. Their `plan()` method returns an array of `ModuleAction` objects — pure data describing what should happen:
+
+- `create-file` — file path + content
+- `update-file` — file path + transform function
+- `merge-package-json` — deep merge payload
+- `install` — package names + dev flag
+- `add-script` — script name + command
+- `run-command` — shell command
+
+The **Executor** is the only component that performs I/O.
+
+### Idempotent by Default
+
+All file creation actions use `skipIfExists: true`. The executor checks before writing. This makes DevFlow safe to re-run.
+
+### Stack-Aware Generation
+
+Every module receives a `ProjectContext` with stack, package manager, TypeScript status, and monorepo info. Configs are generated to match your exact setup.
+
+### Testable
+
+Since actions are pure data, modules can be tested without file system access. The test suite mocks the context and asserts on the generated action arrays.

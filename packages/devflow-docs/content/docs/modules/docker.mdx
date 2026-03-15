@@ -1,0 +1,69 @@
+---
+title: Docker
+description: "Add a production-ready multi-stage Dockerfile, docker-compose.yml, and .dockerignore to any Node.js project automatically. Configs adapt to your package manager (npm, pnpm, yarn, bun)."
+---
+
+## Dockerfile
+
+**Multi-stage Node.js build** — production-optimized Docker image.
+
+[📖 Official Docs](https://docs.docker.com/)
+
+- **ID:** `dockerfile`
+- **Category:** Docker
+
+### What it does
+
+Creates a multi-stage `Dockerfile`:
+
+1. **deps** stage — installs production dependencies
+2. **builder** stage — builds the application
+3. **runner** stage — minimal production image
+
+The Dockerfile adapts to your package manager (uses `pnpm` commands for pnpm projects, `npm ci` for npm, etc.).
+
+---
+
+## docker-compose
+
+**Local development setup** — docker-compose for running the app with services.
+
+[📖 Official Docs](https://docs.docker.com/compose/)
+
+- **ID:** `docker-compose`
+- **Category:** Docker
+
+### What it does
+
+- Creates `docker-compose.yml` with app service
+- Configures volume mounts for development
+- Includes common services placeholder (database, Redis, etc.)
+
+---
+
+## .dockerignore
+
+**Exclude files from Docker builds** — keeps images lean.
+
+[📖 Official Docs](https://docs.docker.com/build/building/context/)
+
+- **ID:** `dockerignore`
+- **Category:** Docker
+
+### What it does
+
+Creates `.dockerignore` with sensible defaults:
+
+```
+node_modules
+.next
+.nuxt
+dist
+build
+.git
+.env*
+*.md
+coverage
+.vscode
+.idea
+```

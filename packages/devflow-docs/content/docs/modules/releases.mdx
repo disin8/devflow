@@ -1,0 +1,92 @@
+---
+title: Releases
+description: "Automate versioning, CHANGELOG generation, Git tagging, and npm publishing with release-it or Changesets. DevFlow configures semantic versioning for both single-package projects and monorepos."
+---
+
+## Release-it
+
+**Interactive release CLI** — automates version bumps, changelogs, Git tags, and npm publishing.
+
+[📖 Official Docs](https://github.com/release-it/release-it)
+
+- **ID:** `release-it`
+- **Category:** Release
+
+### What it does
+
+- Installs `release-it` and `@release-it/conventional-changelog`
+- Creates `.release-it.json` configuration
+- Adds `release` script
+
+### Generated Config
+
+```json
+{
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}"
+  },
+  "npm": {
+    "publish": false
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "infile": "CHANGELOG.md"
+    }
+  }
+}
+```
+
+---
+
+## Changesets
+
+**Monorepo-friendly versioning** — manages version bumps and changelogs across multiple packages.
+
+[📖 Official Docs](https://github.com/changesets/changesets)
+
+- **ID:** `changesets`
+- **Category:** Release
+- **Recommended for:** Monorepos
+
+### What it does
+
+- Installs `@changesets/cli`
+- Creates `.changeset/config.json`
+- Adds `changeset`, `version`, and `publish` scripts
+
+This is the preferred release tool for monorepos. When a monorepo is detected, presets automatically use Changesets instead of Release-it.
+
+---
+
+## semantic-release
+
+**Fully automated CI releases** — versions, changelogs, and publishing triggered entirely from CI.
+
+[📖 Official Docs](https://github.com/semantic-release/semantic-release)
+
+- **ID:** `semantic-release`
+- **Category:** Release
+
+### What it does
+
+- Installs `semantic-release` and plugins
+- Creates `.releaserc.json` configuration
+- Adds `semantic-release` script
+
+---
+
+## Conventional Changelog
+
+**Standalone changelog generation** — generates CHANGELOG.md from conventional commits without a full release flow.
+
+[📖 Official Docs](https://github.com/conventional-changelog/conventional-changelog)
+
+- **ID:** `conventional-changelog`
+- **Category:** Release
+
+### What it does
+
+- Installs `conventional-changelog-cli`
+- Adds `changelog` script

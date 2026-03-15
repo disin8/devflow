@@ -1,0 +1,97 @@
+---
+title: Presets
+description: "Skip manual module selection with DevFlow presets. Choose Minimal, Recommended, or Full — each preset is tailored to your detected stack (React, Next.js, Vue, NestJS, Node.js) and installs the right tools automatically."
+---
+
+## Overview
+
+Presets are pre-configured module selections that let you skip individual module picking. They adjust automatically for your detected stack and repo type.
+
+```bash
+# Apply the recommended preset
+devflow --all
+```
+
+## Preset Levels
+
+### Minimal
+
+The essentials for any project:
+
+- **Husky** — Git hooks
+- **lint-staged** — Run linters on staged files
+- **Commitlint** — Enforce conventional commits
+- **EditorConfig** — Consistent editor settings
+
+```bash
+devflow --all  # then choose "Minimal" in the wizard
+```
+
+### Recommended
+
+Everything in Minimal, plus:
+
+- **ESLint** — JS/TS linter
+- **Prettier** — Code formatter
+- **Vitest** — Test runner
+- **GitHub Actions** — CI workflow
+- **TypeScript** — Strict tsconfig
+- **.nvmrc** — Pin Node.js version
+- **.env.example** — Document environment variables
+- **VSCode Settings** — Shared editor config
+
+### Full
+
+Everything in Recommended, plus:
+
+- **Commitizen** — Interactive commit CLI
+- **Stylelint** — CSS linter
+- **markdownlint** — Markdown checker
+- **cspell** — Spell checker
+- **Playwright** — E2E testing
+- **Codecov** — Coverage reporting
+- **Renovate** — Dependency updates
+- **Release-it** — Release management
+- **npm audit** — Vulnerability scanning
+- **Gitleaks** — Secret scanning
+- **Makefile** — Developer shortcuts
+- **Dockerfile** + **docker-compose** + **.dockerignore**
+- **README** + **CONTRIBUTING** + **CODE_OF_CONDUCT** + **SECURITY.md** + **LICENSE**
+
+## Stack Adjustments
+
+Presets adapt based on your stack:
+
+| Stack                    | Additional Modules                 |
+| ------------------------ | ---------------------------------- |
+| **React** / **Next.js**  | Testing Library, Playwright (Full) |
+| **Vue** / **Nuxt**       | Testing Library                    |
+| **Node.js** / **NestJS** | _(base preset only)_               |
+| **SvelteKit**            | _(base preset only)_               |
+
+## Monorepo Adjustments
+
+When repo type is `monorepo`:
+
+- **release-it** is replaced with **Changesets** (monorepo-friendly versioning)
+- **Workspaces** module is added (shared tsconfig, workspace configuration)
+- Presets include workspace-aware tooling
+
+## Deduplication
+
+All presets guarantee no duplicate module IDs — even when stack-specific and monorepo additions overlap.
+
+## Using Presets via CLI
+
+```bash
+# Recommended preset with auto-detection
+devflow --all
+
+# Full preset, no prompts
+devflow --all --yes
+
+# Preview the full preset
+devflow --all --dry-run
+```
+
+Or select a preset level in the interactive wizard at Step 3.

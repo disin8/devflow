@@ -1,0 +1,168 @@
+---
+title: "Git & Commits"
+description: "Add Husky pre-commit hooks, lint-staged, Commitlint, Commitizen, and standard-version to your project automatically. Enforce conventional commits and run linters on staged files with one command: npx create-devflow."
+---
+
+## Husky
+
+**Git hooks made easy** — manages pre-commit, commit-msg, and pre-push hooks.
+
+[📖 Official Docs](https://typicode.github.io/husky/)
+
+- **ID:** `husky`
+- **Category:** Git
+- **Conflicts with:** Lefthook
+
+### What it does
+
+- Installs `husky` as a dev dependency
+- Adds a `prepare` script (`husky`)
+- Creates `.husky/pre-commit` — runs `npx lint-staged` (or `npm run lint`)
+- Creates `.husky/commit-msg` — runs `npx commitlint --edit "$1"`
+
+### Options
+
+| Option           | Type       | Default                        | Description                   |
+| ---------------- | ---------- | ------------------------------ | ----------------------------- |
+| `hooks`          | `string[]` | `["pre-commit", "commit-msg"]` | Which hooks to configure      |
+| `withLintStaged` | `boolean`  | `false`                        | Use lint-staged in pre-commit |
+
+### Detection
+
+Detected as already configured if `.husky/pre-commit` or `.husky/_/husky.sh` exists.
+
+---
+
+## lint-staged
+
+**Run linters on staged files only** — ensures only changed files are linted before commit.
+
+[📖 Official Docs](https://github.com/okonet/lint-staged)
+
+- **ID:** `lint-staged`
+- **Category:** Git
+- **Depends on:** Husky
+
+### What it does
+
+- Installs `lint-staged` as a dev dependency
+- Adds lint-staged configuration to `package.json`
+- Configures glob patterns based on your stack (e.g., `*.{ts,tsx}` for TypeScript)
+
+---
+
+## Commitlint
+
+**Enforce conventional commit messages** — rejects commits that don't follow the [Conventional Commits](https://www.conventionalcommits.org/) spec.
+
+[📖 Official Docs](https://commitlint.js.org/)
+
+- **ID:** `commitlint`
+- **Category:** Git
+
+### What it does
+
+- Installs `@commitlint/cli` and `@commitlint/config-conventional`
+- Creates `commitlint.config.mjs`
+
+### Options
+
+| Option | Type                  | Default    | Description                                                            |
+| ------ | --------------------- | ---------- | ---------------------------------------------------------------------- |
+| `mode` | `"strict" \| "loose"` | `"strict"` | Strict adds extra rules for type-enum, subject-case, header-max-length |
+
+### Strict Mode Config
+
+```javascript
+export default {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "type-enum": [
+      2,
+      "always",
+      [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "chore",
+        "revert",
+      ],
+    ],
+    "subject-case": [2, "never", ["start-case", "pascal-case", "upper-case"]],
+    "header-max-length": [2, "always", 100],
+  },
+};
+```
+
+---
+
+## Commitizen
+
+**Interactive commit CLI** — guides you through writing a conventional commit message.
+
+[📖 Official Docs](http://commitizen.github.io/cz-cli/)
+
+- **ID:** `commitizen`
+- **Category:** Git
+
+### What it does
+
+- Installs `commitizen` and `cz-conventional-changelog`
+- Adds `config.commitizen` to `package.json`
+- Adds a `commit` script
+
+---
+
+## Lefthook
+
+**Fast Git hooks manager** — a Rust-based alternative to Husky.
+
+[📖 Official Docs](https://lefthook.readthedocs.io/)
+
+- **ID:** `lefthook`
+- **Category:** Git
+- **Conflicts with:** Husky
+
+### What it does
+
+- Installs `lefthook`
+- Creates `lefthook.yml` with pre-commit and commit-msg hook configurations
+
+---
+
+## git-cliff
+
+**Changelog generator** — generates changelogs from Git history using conventional commits.
+
+[📖 Official Docs](https://git-cliff.org/)
+
+- **ID:** `git-cliff`
+- **Category:** Git
+
+### What it does
+
+- Installs `git-cliff`
+- Creates `cliff.toml` configuration
+- Adds a `changelog` script
+
+---
+
+## standard-version
+
+**Versioning + changelog** — automates version bumps and CHANGELOG.md generation.
+
+[📖 Official Docs](https://github.com/conventional-changelog/standard-version)
+
+- **ID:** `standard-version`
+- **Category:** Git
+
+### What it does
+
+- Installs `standard-version`
+- Adds `release` and `release:first` scripts

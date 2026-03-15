@@ -1,0 +1,81 @@
+---
+title: Quick Start
+description: "Run npx create-devflow in your project root and follow the interactive wizard to automatically configure Git hooks, ESLint, Prettier, Vitest, GitHub Actions CI/CD, and more — in under 2 minutes."
+---
+
+## 1. Run the Wizard
+
+```bash
+npx create-devflow
+```
+
+## 2. Auto-Detection
+
+DevFlow automatically detects:
+
+- **Package manager** — from lock files (`pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, `package-lock.json`) or the `packageManager` field
+- **TypeScript** — from `tsconfig.json`
+- **Stack** — from dependencies (React, Vue, Next.js, Nuxt, NestJS, SvelteKit, or plain Node.js)
+- **Monorepo** — from `nx.json`, `turbo.json`, `pnpm-workspace.yaml`, or `workspaces` in `package.json`
+
+## 3. Follow the Wizard
+
+The interactive wizard has 6 steps:
+
+| Step  | Description                                                      |
+| ----- | ---------------------------------------------------------------- |
+| **0** | Auto-detect project context                                      |
+| **1** | Choose repo type (Single / Monorepo)                             |
+| **2** | Choose or confirm stack                                          |
+| **3** | Select modules with checkboxes (grouped by category)             |
+| **4** | Fine-tune settings (commit strictness, CI provider, hooks, etc.) |
+| **5** | Review execution plan and confirm                                |
+
+## 4. Review and Apply
+
+Before applying anything, DevFlow shows you a complete execution plan:
+
+```
+╔══════════════════════════════════════╗
+║         Execution Plan               ║
+╚══════════════════════════════════════╝
+
+  Files to create:
+    ✚ .husky/pre-commit
+    ✚ .husky/commit-msg
+    ✚ commitlint.config.mjs
+    ✚ eslint.config.js
+    ✚ .prettierrc
+    ✚ .github/workflows/ci.yml
+
+  Packages to install:
+    📦 husky (dev)
+    📦 lint-staged (dev)
+    📦 eslint (dev)
+    📦 prettier (dev)
+
+  Scripts to add:
+    ▸ prepare: husky
+    ▸ lint: eslint .
+    ▸ format: prettier --write .
+```
+
+Confirm to apply, or choose `--dry-run` to preview without changes.
+
+## 5. Done!
+
+DevFlow creates config files, installs packages, and adds npm scripts. Your workflow is ready.
+
+## Quick Preset Mode
+
+Skip the wizard entirely:
+
+```bash
+# Apply recommended preset for your project
+devflow --all
+
+# Apply with no confirmations
+devflow --all --yes
+```
+
+See [Presets](/docs/presets) for Minimal, Recommended, and Full configurations.
