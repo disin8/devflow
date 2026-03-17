@@ -1,6 +1,6 @@
 {
   "name": "create-devflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI utility to bootstrap a complete DevFlow in any repo: Git hooks, commit convention, lint/format, tests, typecheck, CI/CD, releases, security, Docker, monorepo support",
   "type": "module",
   "bin": {

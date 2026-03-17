@@ -64,18 +64,6 @@ export function Navbar({ stars }: NavbarProps) {
             className="inline-flex items-center gap-0 rounded-xl border border-line overflow-hidden font-roboto-mono text-[13px] font-medium transition-colors hover:border-accent/40 group"
           >
             <span className="flex items-center gap-1.5 px-3 py-1.5 border-r border-line text-muted bg-card transition-colors group-hover:text-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M288 288h-32v-64h32v64zm288-128v192H288v32H160v-32H0V160h576zm-416 32H32v128h64v-96h32v96h32V192zm160 0H192v160h64v-32h64V192zm224 0H352v128h64v-96h32v96h32v-96h32v96h32V192z" /></svg>
-              GitHub
-            </span>
-          </Link>
-
-          <Link
-            href="https://github.com/disin8/devflow"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-0 rounded-xl border border-line overflow-hidden font-roboto-mono text-[13px] font-medium transition-colors hover:border-accent/40 group"
-          >
-            <span className="flex items-center gap-1.5 px-3 py-1.5 border-r border-line text-muted bg-card transition-colors group-hover:text-foreground">
               <Github size={14} />
               GitHub
             </span>
