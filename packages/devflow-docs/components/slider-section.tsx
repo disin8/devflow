@@ -104,7 +104,7 @@ function StepPreview({ lines }: { lines: Line[] }) {
         <span className={`w-3 h-3 rounded-full bg-line/10`} />
         <span className={`w-3 h-3 rounded-full bg-line/10`} />
       </div>
-      <div className="p-6 font-(family-name:--font-roboto-mono) text-[13px] leading-[1.7em]">
+      <div className="p-6 font-roboto-mono text-[13px] leading-[1.7em]">
         {lines.map((line) => (
           <div key={line.num} className="flex">
             <span className="w-8 shrink-0 text-right mr-4 line-number select-none">
@@ -169,10 +169,10 @@ export function SliderSection() {
                   }`}
               >
                 <div className="flex items-center gap-4">
-                  <span className="font-(family-name:--font-roboto-mono) text-[14px] text-accent">
+                  <span className="font-roboto-mono text-[14px] text-accent">
                     {item.step}
                   </span>
-                  <h3 className="font-(family-name:--font-roboto-mono) text-[18px] font-medium text-foreground">
+                  <h3 className="font-roboto-mono text-[18px] font-medium text-foreground">
                     {item.title}
                   </h3>
                 </div>

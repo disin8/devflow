@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { confirm, select, checkbox, input } from "@inquirer/prompts";
+import { confirm, select, checkbox } from "@inquirer/prompts";
 import type {
   Category,
   CIProvider,
@@ -16,7 +16,6 @@ import { CATEGORY_LABELS } from "../core/types.js";
 import { detectProject } from "../core/context.js";
 import { log } from "../core/logger.js";
 import {
-  ALL_MODULES,
   detectConflicts,
   getModulesByCategory,
   resolveModules,
@@ -33,7 +32,7 @@ async function stepDetect(
   root: string,
   forcePm?: PackageManager,
 ): Promise<ProjectContext> {
-  log.header("Step 0 · Project Detection");
+  log.header("Project Detection");
   const ctx = detectProject(root, forcePm);
 
   log.kv("Root", ctx.root);
@@ -50,7 +49,8 @@ async function stepDetect(
   if (ctx.monorepoTool) log.kv("Monorepo tool", ctx.monorepoTool);
   if (ctx.workspacePatterns.length)
     log.kv("Workspaces", ctx.workspacePatterns.join(", "));
-  if (ctx.stack) log.kv("Detected stack", ctx.stack);
+  if (ctx.repoType !== "monorepo" && ctx.stack)
+    log.kv("Detected stack", ctx.stack);
   log.br();
 
   const ok = await confirm({
@@ -68,8 +68,9 @@ async function stepDetect(
 
 async function stepRepoType(
   ctx: ProjectContext,
+  stepNum: number,
 ): Promise<{ repoType: RepoType; monorepoTool?: MonorepoTool }> {
-  log.header("Step 1 · Repository Type");
+  log.header(`Step ${stepNum} · Repository Type`);
 
   const repoType = await select<RepoType>({
     message: "Repository type:",
@@ -96,8 +97,8 @@ async function stepRepoType(
   return { repoType, monorepoTool };
 }
 
-async function stepStack(detected?: Stack): Promise<Stack> {
-  log.header("Step 2 · Stack / Profile");
+async function stepStack(stepNum: number, detected?: Stack): Promise<Stack> {
+  log.header(`Step ${stepNum} · Stack / Profile`);
 
   return select<Stack>({
     message: "Primary stack:",
@@ -117,8 +118,9 @@ async function stepStack(detected?: Stack): Promise<Stack> {
 async function stepModules(
   stack: Stack,
   repoType: RepoType,
+  stepNum: number,
 ): Promise<string[]> {
-  log.header("Step 3 · Module Selection");
+  log.header(`Step ${stepNum} · Module Selection`);
 
   const usePreset = await select<PresetLevel | "custom">({
     message: "Start from a preset?",
@@ -131,12 +133,13 @@ async function stepModules(
     default: "recommended",
   });
 
-  let preSelected: Set<string>;
   if (usePreset !== "custom") {
-    preSelected = new Set(getPreset(stack, usePreset, repoType));
-  } else {
-    preSelected = new Set<string>();
+    const presetModules = getPreset(stack, usePreset, repoType);
+    log.info(`Preset selected: ${usePreset} (${presetModules.length} modules)`);
+    return presetModules;
   }
+
+  const preSelected = new Set<string>();
 
   const categories: Category[] = [
     "git",
@@ -201,14 +204,43 @@ async function stepModules(
 async function stepSettings(
   selectedIds: string[],
   ctx: ProjectContext,
+  stepNum: number,
 ): Promise<{
   moduleOptions: Record<string, ModuleOptions>;
   ciProvider: CIProvider;
 }> {
-  log.header("Step 4 · Settings");
+  log.header(`Step ${stepNum} · Settings`);
   const ids = new Set(selectedIds);
   const moduleOptions: Record<string, ModuleOptions> = {};
   let ciProvider: CIProvider = "github";
+
+  const customize = await confirm({
+    message: "Customize module settings? (No = use sensible defaults)",
+    default: false,
+  });
+
+  if (ids.has("lint-staged")) {
+    const formatter = ids.has("biome") ? "biome" : "eslint-prettier";
+    moduleOptions["lint-staged"] = { formatter };
+  }
+
+  if (!customize) {
+    if (ids.has("commitlint")) moduleOptions["commitlint"] = { mode: "strict" };
+    if (ids.has("husky")) {
+      moduleOptions["husky"] = {
+        hooks: ids.has("commitlint")
+          ? ["pre-commit", "commit-msg"]
+          : ["pre-commit"],
+        withLintStaged: ids.has("lint-staged"),
+      };
+    }
+    if (ids.has("commitizen"))
+      moduleOptions["commitizen"] = { adapter: "cz-git" };
+    if (ids.has("license")) moduleOptions["license"] = { license: "MIT" };
+    if (ids.has("github-actions") && ids.has("gitlab-ci")) ciProvider = "both";
+    else if (ids.has("gitlab-ci")) ciProvider = "gitlab";
+    return { moduleOptions, ciProvider };
+  }
 
   if (ids.has("commitlint")) {
     const mode = await select<string>({
@@ -272,11 +304,6 @@ async function stepSettings(
     moduleOptions["husky"] = { hooks, withLintStaged: ids.has("lint-staged") };
   }
 
-  if (ids.has("lint-staged")) {
-    const formatter = ids.has("biome") ? "biome" : "eslint-prettier";
-    moduleOptions["lint-staged"] = { formatter };
-  }
-
   if (ids.has("commitizen")) {
     const adapter = await select<string>({
       message: "Commitizen adapter:",
@@ -325,7 +352,7 @@ async function stepPlanAndConfirm(state: WizardState): Promise<boolean> {
 }
 
 async function stepExecute(state: WizardState): Promise<void> {
-  log.header("Step 6 · Executing");
+  log.header("Executing");
   const modules = resolveModules(state.selectedModuleIds);
   const plan = await buildPlan(modules, state.context, state.moduleOptions);
   const summary = await executePlan(plan, state.context, state.skipInstall);
@@ -357,45 +384,66 @@ export async function runWizard(opts: WizardOptions): Promise<void> {
       chalk.dim("  Bootstrap your complete development workflow\n"),
   );
 
-  const ctx = await stepDetect(opts.root, opts.forcePm);
+  try {
+    const ctx = await stepDetect(opts.root, opts.forcePm);
 
-  const { repoType, monorepoTool } = await stepRepoType(ctx);
-  ctx.repoType = repoType;
-  ctx.monorepoTool = monorepoTool;
+    let stepNum = 1;
 
-  const stack = await stepStack(ctx.stack);
-  ctx.stack = stack;
+    let repoType = ctx.repoType;
+    let monorepoTool = ctx.monorepoTool;
+    if (!ctx.monorepoTool && ctx.repoType === "single") {
+      const result = await stepRepoType(ctx, stepNum++);
+      repoType = result.repoType;
+      monorepoTool = result.monorepoTool;
+    }
+    ctx.repoType = repoType;
+    ctx.monorepoTool = monorepoTool;
 
-  const selectedModuleIds = await stepModules(stack, repoType);
+    let stack = ctx.stack;
+    if (!stack) {
+      stack = await stepStack(stepNum++);
+    }
+    ctx.stack = stack;
 
-  if (selectedModuleIds.length === 0) {
-    log.warn("No modules selected. Exiting.");
-    return;
+    const selectedModuleIds = await stepModules(stack, repoType, stepNum++);
+
+    if (selectedModuleIds.length === 0) {
+      log.warn("No modules selected. Exiting.");
+      return;
+    }
+
+    const { moduleOptions, ciProvider } = await stepSettings(
+      selectedModuleIds,
+      ctx,
+      stepNum++,
+    );
+
+    const state: WizardState = {
+      context: ctx,
+      repoType,
+      monorepoTool,
+      stack,
+      selectedModuleIds,
+      moduleOptions,
+      ciProvider,
+      dryRun: opts.dryRun ?? false,
+      skipInstall: opts.skipInstall ?? false,
+      yes: opts.yes ?? false,
+    };
+
+    const go = await stepPlanAndConfirm(state);
+    if (!go) {
+      log.info("Aborted.");
+      return;
+    }
+
+    await stepExecute(state);
+  } catch (err) {
+    if (err instanceof Error && err.name === "ExitPromptError") {
+      log.br();
+      log.info("Interrupted. Bye!");
+      process.exit(0);
+    }
+    throw err;
   }
-
-  const { moduleOptions, ciProvider } = await stepSettings(
-    selectedModuleIds,
-    ctx,
-  );
-
-  const state: WizardState = {
-    context: ctx,
-    repoType,
-    monorepoTool,
-    stack,
-    selectedModuleIds,
-    moduleOptions,
-    ciProvider,
-    dryRun: opts.dryRun ?? false,
-    skipInstall: opts.skipInstall ?? false,
-    yes: opts.yes ?? false,
-  };
-
-  const go = await stepPlanAndConfirm(state);
-  if (!go) {
-    log.info("Aborted.");
-    return;
-  }
-
-  await stepExecute(state);
 }

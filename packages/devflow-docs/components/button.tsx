@@ -13,7 +13,7 @@ interface ButtonProps {
 
 export function Button({ children, href, variant = "primary", className = "", onClick }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl font-(family-name:--font-roboto-mono) text-[14px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap";
+    "inline-flex items-center justify-center gap-2 rounded-xl font-roboto-mono text-[14px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap";
 
   const variants = {
     primary: "bg-accent text-accent-fg px-6 py-3 hover:brightness-110",

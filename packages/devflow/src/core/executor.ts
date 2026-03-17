@@ -1,6 +1,9 @@
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { exec, execSync } from "node:child_process";
+import { promisify } from "node:util";
 import ora from "ora";
+
+const execAsync = promisify(exec);
 import chalk from "chalk";
 import type {
   DevFlowModule,
@@ -56,6 +59,7 @@ export async function buildPlan(
       }
     }
   }
+
   // deduplicate
   plan.filesToCreate = [...new Set(plan.filesToCreate)];
   plan.filesToUpdate = [...new Set(plan.filesToUpdate)];
@@ -146,11 +150,11 @@ export async function executePlan(
       .map((p) => p.name);
     try {
       if (devPkgs.length) {
-        runInstall(ctx, devPkgs, true);
+        await runInstall(ctx, devPkgs, true);
         summary.installedPackages.push(...devPkgs);
       }
       if (prodPkgs.length) {
-        runInstall(ctx, prodPkgs, false);
+        await runInstall(ctx, prodPkgs, false);
         summary.installedPackages.push(...prodPkgs);
       }
       installSpinner.succeed("Dependencies installed");
@@ -171,7 +175,7 @@ export async function executePlan(
         const cmdSpinner = ora(action.description).start();
         try {
           if (!isDryRun()) {
-            execSync(action.command, { cwd: ctx.root, stdio: "pipe" });
+            await execAsync(action.command, { cwd: ctx.root });
           }
           cmdSpinner.succeed(action.description);
         } catch {
@@ -219,7 +223,11 @@ async function applyAction(action: ModuleAction, ctx: ProjectContext) {
   }
 }
 
-function runInstall(ctx: ProjectContext, packages: string[], dev: boolean) {
+async function runInstall(
+  ctx: ProjectContext,
+  packages: string[],
+  dev: boolean,
+) {
   if (isDryRun()) {
     log.info(`Would install ${dev ? "(dev)" : ""}: ${packages.join(" ")}`);
     return;
@@ -227,9 +235,11 @@ function runInstall(ctx: ProjectContext, packages: string[], dev: boolean) {
   const flag = dev ? "-D" : "";
   let cmd: string;
   switch (ctx.pm) {
-    case "pnpm":
-      cmd = `pnpm add ${flag} ${packages.join(" ")}`;
+    case "pnpm": {
+      const wsFlag = ctx.repoType === "monorepo" ? " -w" : "";
+      cmd = `pnpm add ${flag}${wsFlag} ${packages.join(" ")}`;
       break;
+    }
     case "yarn":
       cmd = `yarn add ${dev ? "--dev" : ""} ${packages.join(" ")}`;
       break;
@@ -239,7 +249,7 @@ function runInstall(ctx: ProjectContext, packages: string[], dev: boolean) {
     default:
       cmd = `npm install ${dev ? "--save-dev" : ""} ${packages.join(" ")}`;
   }
-  execSync(cmd, { cwd: ctx.root, stdio: "pipe" });
+  await execAsync(cmd, { cwd: ctx.root });
 }
 
 export function printSummary(summary: ExecutionSummary) {

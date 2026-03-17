@@ -122,7 +122,7 @@ function CodeEditor() {
           <button
             key={tab.label}
             onClick={() => setActiveTab(i)}
-            className={`relative px-5 py-3 font-(family-name:--font-roboto-mono) text-[13px] transition-colors cursor-pointer ${activeTab === i
+            className={`relative px-5 py-3 font-roboto-mono text-[13px] transition-colors cursor-pointer ${activeTab === i
               ? "text-foreground"
               : "text-code hover:text-foreground/60"
               }`}
@@ -139,7 +139,7 @@ function CodeEditor() {
         {codeTabs.map((tab, i) => (
           <div
             key={tab.label}
-            className={`p-6 font-(family-name:--font-roboto-mono) text-[13px] leading-[1.6em] transition-all duration-300 ${activeTab === i
+            className={`p-6 font-roboto-mono text-[13px] leading-[1.6em] transition-all duration-300 ${activeTab === i
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-2 absolute inset-0 pointer-events-none"
               }`}
@@ -165,7 +165,7 @@ function CodeEditor() {
       <div className="flex items-center justify-between border-t border-line px-6 py-3">
         <Link
           href="/docs"
-          className="font-(family-name:--font-roboto-mono) text-[13px] text-muted hover:text-foreground transition-colors flex items-center gap-1"
+          className="font-roboto-mono text-[13px] text-muted hover:text-foreground transition-colors flex items-center gap-1"
         >
           Documentation <ChevronRight size={14} />
         </Link>
@@ -194,7 +194,7 @@ export function HeroSection() {
           className="mb-8 inline-flex items-center gap-3 rounded-full border border-line bg-card px-4 py-2 transition-colors hover:border-accent/30"
         >
           <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-          <span className="font-(family-name:--font-roboto-mono) text-[14px] text-accent">
+          <span className="font-roboto-mono text-[14px] text-accent">
             40+ modules · open source
           </span>
           <div className="flex items-center">
@@ -204,9 +204,10 @@ export function HeroSection() {
           </div>
         </Link>
 
-        <h1 className="mb-6 text-center font-(family-name:--font-archivo) text-[64px] max-lg:text-[48px] max-md:text-[36px] font-medium leading-[1.2em] text-foreground">
+        <h1 className="mb-6 text-center font-archivo text-[64px] max-lg:text-[48px] max-md:text-[36px] font-medium leading-[1.2em] text-foreground">
           Ship production-ready{" "}<br className="hidden md:block" />
           workflows for <TypewriterText />
+          <span className="sr-only">Node.js projects, TypeScript repos, monorepos, React apps, and NestJS services</span>
         </h1>
 
         <p className="mb-10 max-w-xl text-center text-[18px] leading-[1.4em] text-muted">

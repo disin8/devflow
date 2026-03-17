@@ -344,10 +344,11 @@ export function BuilderClient() {
 
   return (
     <div className="landing min-h-screen">
+      <h1 className="sr-only">DevFlow Builder – Visual Workflow Configuration Wizard</h1>
       <div className="mx-auto flex max-w-360">
         <aside className="hidden lg:flex w-72 shrink-0 flex-col border-r border-line p-6 sticky top-14.25 h-[calc(100vh-80px)] overflow-y-auto">
           <div className="mb-6">
-            <label className="flex items-center justify-between mb-2 font-(family-name:--font-roboto-mono) text-[11px] font-semibold uppercase tracking-wider text-muted">
+            <label className="flex items-center justify-between mb-2 font-roboto-mono text-[11px] font-semibold uppercase tracking-wider text-muted">
               CLI Command
               <button
                 onClick={copyCommand}
@@ -357,13 +358,13 @@ export function BuilderClient() {
                 {copied ? "Copied" : "Copy"}
               </button>
             </label>
-            <div className="rounded-xl border border-line bg-card p-3 font-(family-name:--font-roboto-mono) text-[12px] text-accent break-all leading-relaxed">
+            <div className="rounded-xl border border-line bg-card p-3 font-roboto-mono text-[12px] text-accent break-all leading-relaxed">
               {cliCommand}
             </div>
           </div>
 
           <div className="mb-6">
-            <h3 className="mb-3 font-(family-name:--font-roboto-mono) text-[11px] font-semibold uppercase tracking-wider text-muted">
+            <h3 className="mb-3 font-roboto-mono text-[11px] font-semibold uppercase tracking-wider text-muted">
               Selected Stack
               <span className="ml-2 text-accent">{selectedCount} picks</span>
             </h3>
@@ -376,14 +377,14 @@ export function BuilderClient() {
                   if (sel.length === 0) return null;
                   return (
                     <div key={cat.id}>
-                      <span className="font-(family-name:--font-roboto-mono) text-[10px] uppercase text-muted">
+                      <span className="font-roboto-mono text-[10px] uppercase text-muted">
                         {cat.label}
                       </span>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {sel.map((o) => (
                           <span
                             key={o.id}
-                            className="inline-flex items-center gap-1 rounded-lg bg-accent/10 border border-accent/20 px-2 py-1 text-[11px] text-accent font-(family-name:--font-roboto-mono)"
+                            className="inline-flex items-center gap-1 rounded-lg bg-accent/10 border border-accent/20 px-2 py-1 text-[11px] text-accent font-roboto-mono"
                           >
                             {o.icon} {o.label}
                             <button
@@ -406,14 +407,14 @@ export function BuilderClient() {
                   if (sel.length === 0) return null;
                   return (
                     <div key={cat.id}>
-                      <span className="font-(family-name:--font-roboto-mono) text-[10px] uppercase text-muted">
+                      <span className="font-roboto-mono text-[10px] uppercase text-muted">
                         {cat.label}
                       </span>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {sel.map((o) => (
                           <span
                             key={o.id}
-                            className="inline-flex items-center gap-1 rounded-lg bg-card border border-line px-2 py-1 text-[11px] text-muted font-(family-name:--font-roboto-mono)"
+                            className="inline-flex items-center gap-1 rounded-lg bg-card border border-line px-2 py-1 text-[11px] text-muted font-roboto-mono"
                           >
                             {o.icon} {o.label}
                             <button
@@ -433,7 +434,7 @@ export function BuilderClient() {
 
           <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-line">
             <div className="flex flex-col gap-2">
-              <span className="font-(family-name:--font-roboto-mono) text-[10px] uppercase text-muted">
+              <span className="font-roboto-mono text-[10px] uppercase text-muted">
                 Presets
               </span>
               <div className="flex gap-2">
@@ -441,7 +442,7 @@ export function BuilderClient() {
                   <button
                     key={p}
                     onClick={() => applyPreset(p)}
-                    className="rounded-lg border border-line bg-card px-3 py-1.5 font-(family-name:--font-roboto-mono) text-[11px] capitalize text-muted hover:text-foreground hover:border-accent/30 transition-colors cursor-pointer"
+                    className="rounded-lg border border-line bg-card px-3 py-1.5 font-roboto-mono text-[11px] capitalize text-muted hover:text-foreground hover:border-accent/30 transition-colors cursor-pointer"
                   >
                     {p}
                   </button>
@@ -450,7 +451,7 @@ export function BuilderClient() {
             </div>
             <button
               onClick={reset}
-              className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-4 py-2 font-(family-name:--font-roboto-mono) text-[13px] text-muted hover:text-foreground hover:border-accent/30 transition-colors cursor-pointer"
+              className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-4 py-2 font-roboto-mono text-[13px] text-muted hover:text-foreground hover:border-accent/30 transition-colors cursor-pointer"
             >
               <RotateCcw size={14} /> Reset
             </button>
@@ -469,7 +470,7 @@ export function BuilderClient() {
                 </button>
                 <button
                   onClick={copyCommand}
-                  className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 font-(family-name:--font-roboto-mono) text-[12px] font-bold text-accent-fg cursor-pointer"
+                  className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 font-roboto-mono text-[12px] font-bold text-accent-fg cursor-pointer"
                 >
                   {copied ? <Check size={12} /> : <Copy size={12} />}
                   {copied ? "Copied" : "Copy"}
@@ -477,7 +478,7 @@ export function BuilderClient() {
               </div>
             </div>
             {previewOpen && (
-              <div className="mt-3 rounded-xl border border-line bg-card p-3 font-(family-name:--font-roboto-mono) text-[11px] text-accent break-all">
+              <div className="mt-3 rounded-xl border border-line bg-card p-3 font-roboto-mono text-[11px] text-accent break-all">
                 {cliCommand}
               </div>
             )}
@@ -491,7 +492,7 @@ export function BuilderClient() {
                     <cat.icon size={15} className="text-accent" />
                   </div>
                   <div>
-                    <h2 className="font-(family-name:--font-roboto-mono) text-[16px] font-semibold text-foreground leading-none">
+                    <h2 className="font-roboto-mono text-[16px] font-semibold text-foreground leading-none">
                       {cat.label}
                     </h2>
                     <p className="text-[12px] text-muted mt-0.5">
@@ -527,7 +528,7 @@ export function BuilderClient() {
 
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="text-[18px] leading-none">{option.icon}</span>
-                          <h3 className="font-(family-name:--font-roboto-mono) text-[14px] font-medium text-foreground pr-5">
+                          <h3 className="font-roboto-mono text-[14px] font-medium text-foreground pr-5">
                             {option.label}
                           </h3>
                         </div>
@@ -536,7 +537,7 @@ export function BuilderClient() {
                         </p>
 
                         {isConflict && !isSelected && (
-                          <span className="mt-2 inline-block rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-400 font-(family-name:--font-roboto-mono)">
+                          <span className="mt-2 inline-block rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-400 font-roboto-mono">
                             Conflicts
                           </span>
                         )}

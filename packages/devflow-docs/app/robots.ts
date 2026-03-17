@@ -10,6 +10,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: "https://dev-flow.xyz/sitemap.xml",
-    host: "https://dev-flow.xyz",
   };
 }

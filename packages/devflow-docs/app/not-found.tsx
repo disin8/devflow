@@ -136,15 +136,15 @@ function CodeEditor() {
         <div className="w-3 h-3 rounded-full bg-red-500/80" />
         <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
         <div className="w-3 h-3 rounded-full bg-green-500/80" />
-        <span className="ml-3 font-(family-name:--font-roboto-mono) text-[12px] text-muted">
+        <span className="ml-3 font-roboto-mono text-[12px] text-muted">
           app/[slug]/page.tsx
         </span>
-        <span className="ml-auto font-(family-name:--font-roboto-mono) text-[11px] px-2 py-0.5 rounded bg-[#ff5572]/12 text-[#ff5572]">
+        <span className="ml-auto font-roboto-mono text-[11px] px-2 py-0.5 rounded bg-[#ff5572]/12 text-[#ff5572]">
           ● ERROR
         </span>
       </div>
 
-      <div className="p-5 font-(family-name:--font-roboto-mono) text-[13px] leading-[1.75em] overflow-x-auto">
+      <div className="p-5 font-roboto-mono text-[13px] leading-[1.75em] overflow-x-auto">
         {errorLines.slice(0, visible).map((line, idx) => (
           <div
             key={line.num}
@@ -179,14 +179,14 @@ function CodeEditor() {
 
       <div className="flex items-center justify-between px-4 py-2 border-t border-line bg-editor-bar">
         <div className="flex items-center gap-3">
-          <span className="font-(family-name:--font-roboto-mono) text-[11px] px-1.5 py-0.5 rounded bg-[#ff5572]/12 text-[#ff5572]">
+          <span className="font-roboto-mono text-[11px] px-1.5 py-0.5 rounded bg-[#ff5572]/12 text-[#ff5572]">
             ✕ 1 error
           </span>
-          <span className="font-(family-name:--font-roboto-mono) text-[11px] text-muted">
+          <span className="font-roboto-mono text-[11px] text-muted">
             TypeScript · Next.js
           </span>
         </div>
-        <span className="font-(family-name:--font-roboto-mono) text-[11px] text-muted">
+        <span className="font-roboto-mono text-[11px] text-muted">
           Ln 5, Col 11
         </span>
       </div>
@@ -199,10 +199,10 @@ export default function NotFound() {
     <div className="flex flex-col min-h-screen bg-surface">
       <main className="flex flex-1 flex-col items-center justify-center px-6 pb-20 gap-12">
         <div className="text-center">
-          <div className="font-(family-name:--font-roboto-mono) text-[120px] max-md:text-[72px] font-bold leading-none select-none bg-linear-to-br from-accent from-0% via-[#0d9944] via-60% to-line to-100% bg-clip-text text-transparent">
+          <div className="font-roboto-mono text-[120px] max-md:text-[72px] font-bold leading-none select-none bg-linear-to-br from-accent from-0% via-[#0d9944] via-60% to-line to-100% bg-clip-text text-transparent">
             404
           </div>
-          <p className="font-(family-name:--font-archivo) text-[22px] max-md:text-[18px] font-medium text-white mt-2">
+          <p className="font-archivo text-[22px] max-md:text-[18px] font-medium text-white mt-2">
             Page not found
           </p>
           <p
@@ -210,7 +210,7 @@ export default function NotFound() {
           >
             Looks like this route threw a{" "}
             <code
-              className="font-(family-name:--font-roboto-mono) text-[13px] px-1.5 py-0.5 rounded bg-[#ff5572]/10 text-[#ff5572]"
+              className="font-roboto-mono text-[13px] px-1.5 py-0.5 rounded bg-[#ff5572]/10 text-[#ff5572]"
             >
               NotFoundError
             </code>
@@ -223,13 +223,13 @@ export default function NotFound() {
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl font-(family-name:--font-roboto-mono) text-[14px] font-bold px-6 py-3 transition-all hover:brightness-110 bg-accent text-accent-fg"
+            className="inline-flex items-center gap-2 rounded-xl font-roboto-mono text-[14px] font-bold px-6 py-3 transition-all hover:brightness-110 bg-accent text-accent-fg"
           >
             Go home
           </Link>
           <Link
             href="/docs"
-            className="inline-flex items-center gap-2 rounded-xl font-(family-name:--font-roboto-mono) text-[14px] font-bold px-6 py-3 border border-line text-muted transition-colors hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-xl font-roboto-mono text-[14px] font-bold px-6 py-3 border border-line text-muted transition-colors hover:bg-white/5"
           >
             Read the docs
           </Link>

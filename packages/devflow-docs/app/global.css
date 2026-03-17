@@ -34,6 +34,8 @@ html.light {
 }
 
 @theme inline {
+  --font-archivo: var(--font-archivo);
+  --font-roboto-mono: var(--font-roboto-mono);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
   --color-foreground: var(--foreground);

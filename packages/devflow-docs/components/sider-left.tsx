@@ -48,7 +48,7 @@ export function SliderLeft() {
                   : "border-transparent p-6 hover:bg-card/50"
                   }`}
               >
-                <h3 className="font-(family-name:--font-roboto-mono) text-[18px] font-medium text-foreground">
+                <h3 className="font-roboto-mono text-[18px] font-medium text-foreground">
                   {item.title}
                 </h3>
                 {activeIndex === i && (

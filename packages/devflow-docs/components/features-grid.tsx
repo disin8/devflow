@@ -65,7 +65,7 @@ export function FeaturesGrid() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-line bg-card">
                 <feature.icon size={24} className="text-foreground" strokeWidth={1.5} />
               </div>
-              <h3 className="font-(family-name:--font-roboto-mono) text-[18px] font-medium text-foreground">
+              <h3 className="font-roboto-mono text-[18px] font-medium text-foreground">
                 {feature.title}
               </h3>
               <p className="text-[16px] leading-[1.4em] text-muted">

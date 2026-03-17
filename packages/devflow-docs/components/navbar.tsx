@@ -32,7 +32,7 @@ export function Navbar({ stars }: NavbarProps) {
   return (
     <nav className="relative top-0 z-50 w-full">
       <div className={`mx-auto flex items-center gap-12 px-10 max-md:px-5 py-4 ${isHomePage ? 'bg-nav' : isBuilderPage ? 'bg-page' : 'bg-surface'}`}>
-        <Link href="/" className="flex items-center text-foreground font-(family-name:--font-roboto-mono) text-[15px] font-bold">
+        <Link href="/" className="flex items-center text-foreground font-roboto-mono text-[15px] font-bold">
           DevFlow
         </Link>
 
@@ -41,7 +41,7 @@ export function Navbar({ stars }: NavbarProps) {
             <Link
               key={link.label}
               href={link.href}
-              className="font-(family-name:--font-roboto-mono) text-[14px] font-medium text-muted transition-colors hover:text-foreground"
+              className="font-roboto-mono text-[14px] font-medium text-muted transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
@@ -61,7 +61,19 @@ export function Navbar({ stars }: NavbarProps) {
             href="https://github.com/disin8/devflow"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-0 rounded-xl border border-line overflow-hidden font-(family-name:--font-roboto-mono) text-[13px] font-medium transition-colors hover:border-accent/40 group"
+            className="inline-flex items-center gap-0 rounded-xl border border-line overflow-hidden font-roboto-mono text-[13px] font-medium transition-colors hover:border-accent/40 group"
+          >
+            <span className="flex items-center gap-1.5 px-3 py-1.5 border-r border-line text-muted bg-card transition-colors group-hover:text-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M288 288h-32v-64h32v64zm288-128v192H288v32H160v-32H0V160h576zm-416 32H32v128h64v-96h32v96h32V192zm160 0H192v160h64v-32h64V192zm224 0H352v128h64v-96h32v96h32v-96h32v96h32V192z" /></svg>
+              GitHub
+            </span>
+          </Link>
+
+          <Link
+            href="https://github.com/disin8/devflow"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-0 rounded-xl border border-line overflow-hidden font-roboto-mono text-[13px] font-medium transition-colors hover:border-accent/40 group"
           >
             <span className="flex items-center gap-1.5 px-3 py-1.5 border-r border-line text-muted bg-card transition-colors group-hover:text-foreground">
               <Github size={14} />
@@ -92,7 +104,7 @@ export function Navbar({ stars }: NavbarProps) {
               <Link
                 key={link.label}
                 href={link.href}
-                className="font-(family-name:--font-roboto-mono) text-[14px] font-medium text-muted transition-colors hover:text-foreground"
+                className="font-roboto-mono text-[14px] font-medium text-muted transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>
@@ -101,7 +113,7 @@ export function Navbar({ stars }: NavbarProps) {
               href="https://github.com/disin8/devflow"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-2 border border-line rounded-xl px-5 py-2.5 font-(family-name:--font-roboto-mono) text-[14px] font-medium text-muted hover:text-foreground transition-colors"
+              className="mt-2 inline-flex items-center gap-2 border border-line rounded-xl px-5 py-2.5 font-roboto-mono text-[14px] font-medium text-muted hover:text-foreground transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               <Github size={15} />
@@ -115,7 +127,7 @@ export function Navbar({ stars }: NavbarProps) {
             </Link>
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="mt-2 inline-flex items-center gap-2 border border-line rounded-xl px-5 py-2.5 font-(family-name:--font-roboto-mono) text-[14px] font-medium text-muted hover:text-foreground transition-colors"
+              className="mt-2 inline-flex items-center gap-2 border border-line rounded-xl px-5 py-2.5 font-roboto-mono text-[14px] font-medium text-muted hover:text-foreground transition-colors"
               aria-label="Toggle theme"
             >
               {theme === "light" ? <Sun size={15} /> : <Moon size={15} />}

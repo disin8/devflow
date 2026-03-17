@@ -41,15 +41,15 @@ export function FeatureBlocks() {
               className="group overflow-hidden rounded-3xl border border-line bg-card transition-all hover:border-accent/20"
             >
               <div className="p-6">
-                <h5 className="font-(family-name:--font-roboto-mono) text-[18px] font-semibold text-foreground mb-2">
+                <h4 className="font-roboto-mono text-[18px] font-semibold text-foreground mb-2">
                   {block.title}
-                </h5>
+                </h4>
                 <p className="text-[14px] leading-[1.4em] text-muted mb-4">
                   {block.description}
                 </p>
                 <Link
                   href={block.href}
-                  className="inline-flex items-center gap-1 font-(family-name:--font-roboto-mono) text-[14px] font-bold uppercase text-accent transition-colors hover:opacity-80"
+                  className="inline-flex items-center gap-1 font-roboto-mono text-[14px] font-bold uppercase text-accent transition-colors hover:opacity-80"
                 >
                   LEARN MORE <ChevronRight size={14} />
                 </Link>

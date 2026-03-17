@@ -13,7 +13,7 @@ export function Footer() {
               <Terminal size={20} className="text-accent" />
             </div>
             <div>
-              <p className="font-(family-name:--font-roboto-mono) text-[14px] font-medium text-foreground">
+              <p className="font-roboto-mono text-[14px] font-medium text-foreground">
                 Ready to get started?
               </p>
               <p className="text-[13px] text-muted">
@@ -21,7 +21,7 @@ export function Footer() {
               </p>
             </div>
           </div>
-          <code className="rounded-xl border border-line bg-card px-5 py-2.5 font-(family-name:--font-roboto-mono) text-[14px] text-accent select-all">
+          <code className="rounded-xl border border-line bg-card px-5 py-2.5 font-roboto-mono text-[14px] text-accent select-all">
             npx create-devflow
           </code>
         </div>
