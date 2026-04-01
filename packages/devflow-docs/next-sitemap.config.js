@@ -21,8 +21,7 @@ module.exports = {
     return {
       loc: path,
       changefreq: path === '/builder' ? 'monthly' : 'weekly',
-      priority: path === '/' ? 1 : path === '/docs' ? 0.9 : path === '/builder' ? 0.7 : isDocsPath ? 0.8 : 0.6,
-      lastmod: new Date().toISOString(),
+      priority: path === '/' ? 1 : path === '/docs' ? 0.9 : path === '/builder' ? 0.7 : isDocsPath ? 0.8 : 0.6
     };
   },
 };
