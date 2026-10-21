@@ -4,7 +4,7 @@
   "description": "devflow-video",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.434",
+    "@remotion/cli": "4.0.536",
     "@remotion/tailwind-v4": "4.0.434",
     "@remotion/transitions": "^4.0.434",
     "react": "19.2.3",
