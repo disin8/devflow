@@ -1,6 +1,6 @@
 {
   "name": "devflow-monorepo",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "description": "Monorepo for devflow CLI and documentation",
   "scripts": {
@@ -11,7 +11,7 @@
     "lint": "pnpm -r run lint",
     "clean": "pnpm -r run clean",
     "changelog": "changelogen --output CHANGELOG.md",
-    "release": "changelogen --release --push"
+    "release": "changelogen --release --push --bump minor"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
