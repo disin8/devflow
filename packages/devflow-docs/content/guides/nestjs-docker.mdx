@@ -1,0 +1,209 @@
+---
+title: Docker Setup for NestJS
+description: "Containerise a NestJS service with a multi-stage build, a non-root runtime user, a health check and a CI job that builds and pushes the image."
+---
+
+## The problem
+
+The usual NestJS Dockerfile is a single stage: it installs every dev dependency, copies the source, runs `npm run build` and starts. The image ends up around 700 MB, contains the whole test toolchain, and runs as root.
+
+For a service that has to pass a security review, three things are usually demanded: a small image, a non-root user, and a health check. None of them are in the default Dockerfile.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `Dockerfile` | multi-stage build with a non-root runtime user |
+| `.dockerignore` | keeps the build context small and stops `.env` leaking into the image |
+| `docker-compose.yml` | local run with an optional PostgreSQL service |
+
+## Step 1 — apply the modules
+
+```bash
+npx create-devflow --docker
+```
+
+## Step 2 — check the generated Dockerfile
+
+```dockerfile
+# ── Build stage ──────────────────────────────────────
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+
+# ── Production stage ─────────────────────────────────
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 appuser
+
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --prod
+
+COPY --from=builder /app/dist ./dist
+
+USER appuser
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+Why each part is there:
+
+- **Two stages.** The builder has every dependency, the runner only production ones. The test framework, the linter and the TypeScript compiler never reach the final image.
+- **`COPY package.json` and the lock file before `COPY . .`.** The dependency layer is cached. As long as the lock file does not change, `docker build` skips the install step entirely.
+- **`USER appuser`.** The process runs as uid 1001 instead of root. A container escape then does not start from root.
+- **The lock file is copied into the runtime stage.** `pnpm install --prod` needs it to resolve exactly the same dependency tree.
+
+## Step 3 — adapt the paths to NestJS
+
+NestJS compiles to `dist/` with the default `tsconfig.build.json`, so the `COPY --from=builder /app/dist ./dist` line is already correct. If your build output differs, change that line.
+
+The default NestJS entry point is `dist/main.js`, so the command is usually:
+
+```dockerfile
+CMD ["node", "dist/main.js"]
+```
+
+## Step 4 — add a health check
+
+DevFlow does not generate a `HEALTHCHECK` instruction, because the correct probe depends on your service. For NestJS, add a health endpoint and reference it:
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+
+@Controller('health')
+export class HealthController {
+  @Get()
+  check() {
+    return { status: 'ok' };
+  }
+}
+```
+
+Then add the instruction to the runtime stage:
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:3000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+```
+
+The probe uses Node's built-in `http` module, so no extra tooling is needed in the image.
+
+## Step 5 — build and run it
+
+```bash
+docker compose up --build
+```
+
+The generated compose file builds the production image and exposes port 3000:
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+```
+
+Check the size:
+
+```bash
+docker images my-app
+```
+
+A NestJS service with a multi-stage build usually lands around 150–200 MB, against 600–900 MB for the single-stage version.
+
+## Step 6 — build and push from CI
+
+Add a job to `.github/workflows/ci.yml`:
+
+```yaml
+  docker:
+    runs-on: ubuntu-latest
+    needs: ci
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+```
+
+`needs: ci` means the image is only built when the checks pass. The `cache-to` block is what makes the second build fast — it stores the layer cache in GitHub Actions.
+
+## Manual setup versus DevFlow
+
+Writing a Dockerfile by hand means choosing a base image, getting the two-stage split right, creating the non-root user with the right UID, and making sure the lock file is copied before the source. DevFlow writes all of that in one file, with the package-manager-specific parts filled in for you.
+
+## Limits
+
+- **No health check** in the generated Dockerfile — step 4 shows how to add one.
+- **No `docker-compose` development service.** The generated compose file runs the production image. For hot reload, write a separate development service.
+- **The image runs as uid 1001.** If the service writes to a mounted volume, that volume must be writable by uid 1001.
+- **Alpine is used.** Some native modules need a Debian-based image; change the `FROM` lines to `node:20-slim` if you hit that.
+- **The runtime stage copies `dist/`** — your build has to emit there.
+- **No image scanning in the generated pipeline.** The [security guide](/guides/security-ci) covers adding Trivy.
+
+## FAQ
+
+### How do I run the container with a health check?
+
+Add a `HEALTHCHECK` instruction to the runtime stage that hits your NestJS health endpoint. Step 4 has the exact snippet.
+
+### Does the generated Dockerfile work with pnpm?
+
+Yes. The builder stage enables corepack and installs with the frozen lock file, and the runtime stage installs production dependencies only, using the same lock file name.
+
+### Why does the runtime stage copy the lock file?
+
+Because `pnpm install --prod` needs it to resolve exactly the same dependency tree as the build stage. Without it, the runtime image would resolve fresh versions.
+
+### How do I reduce the image size further?
+
+Use `node:20-slim` instead of `node:20-alpine` only if you need Debian, not for size — Alpine is already smaller. The bigger win is making sure the build stage is not copied into the runtime stage, which the generated Dockerfile already handles.
+
+## Related
+
+- [Docker module](/modules/docker) — what the container module generates
+- [Security scanning in CI](/guides/security-ci) — scan the image you just built
+- [GitHub Actions module](/modules/github-actions) — the pipeline the Docker job attaches to

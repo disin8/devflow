@@ -1,0 +1,58 @@
+---
+title: DevFlow Compared
+description: "Where DevFlow CLI fits next to manual setup, create-next-app, Nx and Turborepo — and which of the four owns which part of a developer workflow."
+---
+
+## The short version
+
+These tools are not competitors. They sit at different layers of the same stack:
+
+| Tool | Owns | Does not own |
+| --- | --- | --- |
+| `create-next-app` | creating a new Next.js application | the workflow around it |
+| **DevFlow CLI** | the workflow around an existing repository | the application itself, the build system, the orchestrator |
+| Nx | the monorepo build graph, generators, caching | linting rules, Git hooks, CI pipeline shape |
+| Turborepo | the monorepo task graph and cache | linting rules, Git hooks, CI pipeline shape |
+
+The only genuine alternative to DevFlow is doing it by hand.
+
+## The comparisons
+
+### [DevFlow vs manual setup](/compare/manual-setup)
+
+The real comparison. Manual setup works — it is just unrepeatable. This page breaks down where the time actually goes and what a copy-paste workflow costs you six months later.
+
+### [DevFlow vs create-next-app](/compare/create-next-app)
+
+`create-next-app` creates the application. DevFlow configures the workflow around it. This page shows the exact order to use them in and what each one leaves for the other.
+
+### [DevFlow vs Nx](/compare/nx)
+
+Nx is a monorepo platform: task graph, caching, generators, project boundaries. DevFlow writes the linting, testing, CI and Git configuration that an Nx repository needs — it does not implement a build system.
+
+### [DevFlow vs Turborepo](/compare/turborepo)
+
+Turborepo is a task runner with a cache. DevFlow writes the `turbo.json` pipeline and the scripts that call it — and the CI workflow that actually uses it.
+
+## When to use what
+
+| Situation | Use |
+| --- | --- |
+| Starting a brand-new Next.js app | `create-next-app`, then DevFlow for the workflow |
+| Adding a workflow to an existing repository | DevFlow |
+| A monorepo that needs generators and enforced boundaries | Nx, then DevFlow for the linting and CI files |
+| A monorepo that needs fast task execution and caching | Turborepo, then DevFlow for the pipeline |
+| A single repository with a good setup already | nothing — DevFlow's `--dry-run` will tell you what it would change |
+| A team that wants to review every config change | manual setup, and keep the diffs in a shared repository |
+
+## The honest summary
+
+DevFlow is a configuration generator. It is at its best when a repository already exists and needs a repeatable workflow, and at its worst when you want something it does not do — a build system, a deployment strategy, a code generator.
+
+Run `npx create-devflow --dry-run` before you decide. The plan it prints is the whole feature set, and it does not modify your project.
+
+## Related
+
+- [CLI reference](/cli) — every flag
+- [Modules](/modules) — what each module generates
+- [Presets](/docs/presets) — Minimal, Recommended and Full

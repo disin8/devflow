@@ -1,0 +1,99 @@
+---
+title: DevFlow vs Turborepo
+description: "Turborepo runs tasks and caches their output. DevFlow writes the turbo.json pipeline, the scripts that call it and the CI workflow."
+---
+
+## The short version
+
+Turborepo is a task runner with a cache. DevFlow is a configuration generator. The Turborepo module generates the configuration; Turborepo executes it.
+
+| | Turborepo | DevFlow CLI |
+| --- | --- | --- |
+| Executes the task graph | Yes | No |
+| Caches task output | Yes | No |
+| Remote cache across branches | With Turborepo Cloud or a self-hosted cache | No |
+| Generates `turbo.json` | No | Yes |
+| Generates the `turbo` scripts | No | Yes |
+| Generates the CI workflow | No | Yes |
+| Generates ESLint, Prettier, Vitest configuration | No | Yes |
+| Generates Git hooks and Commitlint config | No | Yes |
+| Generates Dockerfile and compose | No | Yes |
+| Generates security scanning workflows | No | Yes |
+
+## Where they overlap
+
+Only in the `turbo.json` file and the root scripts. There is no conflict: DevFlow writes them, Turborepo reads them.
+
+What DevFlow generates:
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+```json
+{
+  "scripts": {
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "dev": "turbo dev"
+  }
+}
+```
+
+Turborepo then runs those tasks. The task graph, the hashing, the cache — all of that is Turborepo's job, and DevFlow does not implement any of it.
+
+## What DevFlow does not do for Turborepo
+
+- **It does not add remote caching to the CI workflow.** The generated workflow caches package-manager downloads, not Turborepo outputs. The [Turborepo CI guide](/guides/turborepo-ci) contains the exact cache block to add.
+- **It does not add `--filter` to the CI commands.** The generated workflow runs the whole graph. The guide shows the affected-only variant.
+- **It does not configure Turborepo Cloud.** `turbo login` and `turbo link` are interactive commands you run yourself.
+- **It does not generate a shared ESLint config for the packages.** The ESLint module writes a root config; the guide shows how each package re-exports it.
+
+## The recommended Turborepo setup
+
+```bash
+# 1. Turborepo owns the task graph
+pnpm dlx create-turbo@latest my-org
+
+# 2. DevFlow owns the workflow files
+cd my-org
+npx create-devflow --only eslint --only prettier --only vitest --only github-actions --only husky
+```
+
+Then add the caching block and the affected-only filters from the [Turborepo CI guide](/guides/turborepo-ci).
+
+## When to use only Turborepo
+
+- You have one monorepo and the team already knows the tool.
+- You rely on Turborepo Cloud for a shared remote cache.
+- You do not need the linting, testing, Git hook and security configuration — they are already in place and maintained.
+
+DevFlow earns its place in the second monorepo, and in the services that are not part of the graph at all.
+
+## The overlap in one sentence
+
+Turborepo answers "how do I run this task fast?"; DevFlow answers "which configuration files should this repository have?" — and the answer to the second question is different for every repository, which is why it is worth generating.
+
+## Related
+
+- [Monorepo module](/modules/monorepo) — what the Turborepo module generates
+- [Turborepo CI/CD with GitHub Actions](/guides/turborepo-ci) — the full monorepo pipeline
+- [DevFlow vs Nx](/compare/nx)
+- [DevFlow vs manual setup](/compare/manual-setup)

@@ -1,0 +1,142 @@
+---
+title: ESLint Module
+description: "DevFlow generates a flat eslint.config.mjs for TypeScript, React, Next.js and Vue projects, installs the matching plugins and adds the lint scripts."
+---
+
+## The problem
+
+Setting up ESLint correctly means answering four questions before a single rule runs:
+
+- flat config (`eslint.config.mjs`) or the legacy `.eslintrc`?
+- which parser and plugin for TypeScript, React, Vue?
+- which rules belong to ESLint and which belong to Prettier?
+- what must be ignored so the linter does not lint its own build output?
+
+Get any of them wrong and you get the classic failure modes: `Parsing error: Cannot use import statement outside a module`, a lint run that reports thousands of errors in `dist/`, or ESLint and Prettier rewriting the same line differently.
+
+## The command
+
+```bash
+npx create-devflow --only eslint
+```
+
+Preview first:
+
+```bash
+npx create-devflow --only eslint --dry-run
+```
+
+## Generated files
+
+### `eslint.config.mjs` — TypeScript project
+
+```javascript
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    ignores: ['dist/', 'node_modules/', 'build/', '.next/', '.nuxt/'],
+  },
+];
+```
+
+### `eslint.config.mjs` — React or Next.js project
+
+```javascript
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { react, 'react-hooks': reactHooks },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', 'build/', '.next/', '.nuxt/'],
+  },
+];
+```
+
+### `eslint.config.mjs` — Vue or Nuxt project
+
+```javascript
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import vue from 'eslint-plugin-vue';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...vue.configs['flat/recommended'],
+  {
+    ignores: ['dist/', 'node_modules/', 'build/', '.next/', '.nuxt/'],
+  },
+];
+```
+
+## Packages installed
+
+All of them are dev dependencies:
+
+| Package | Installed when |
+| --- | --- |
+| `eslint` | always |
+| `@eslint/js` | always |
+| `typescript-eslint` | the project has a `tsconfig.json` |
+| `eslint-plugin-react` | the stack is React or Next.js |
+| `eslint-plugin-react-hooks` | the stack is React or Next.js |
+| `eslint-plugin-vue` | the stack is Vue or Nuxt |
+
+## Scripts added
+
+| Script | Command |
+| --- | --- |
+| `lint` | `eslint .` |
+| `lint:fix` | `eslint . --fix` |
+
+Existing scripts with the same name are left alone — DevFlow only adds a script when the name is free.
+
+## Manual setup versus DevFlow
+
+Doing this by hand means installing the packages, then writing the flat config from memory or copying it from a blog post. The copied version is usually missing the `ignores` block, which is why it suddenly reports errors inside `dist/` or `node_modules/`. It is also usually pinned to a rule set from the year it was written.
+
+DevFlow derives the config from the detected stack instead of from a copy-paste, so the React plugin only appears in a React project and the TypeScript preset only appears when the project actually has a `tsconfig.json`.
+
+## Limits
+
+- **Flat config only.** DevFlow writes `eslint.config.mjs`. It does not migrate a legacy `.eslintrc.*` — an existing one is left untouched.
+- **No framework-specific Next.js plugin.** The generated config is React-flavoured and works for both the App Router and the Pages Router, but it does not add `eslint-plugin-next`.
+- **Recommended rule sets, not a house style.** The generated config extends `js.configs.recommended` and `tseslint.configs.recommended`. It does not enable type-aware rules such as `no-floating-promises`, because those require a `projectService` setup that is specific to your `tsconfig.json` layout.
+- **No Prettier rules.** ESLint does not fight Prettier here — the generated config contains no stylistic rules. See the [ESLint, Prettier and Husky guide](/guides/eslint-prettier-husky).
+
+## FAQ
+
+### Does DevFlow overwrite my existing ESLint config?
+
+No. The file is created with skip-if-exists semantics, so an existing `eslint.config.mjs` or `.eslintrc.*` is never replaced. Only `package.json` is merged, and existing scripts are never replaced either.
+
+### Does DevFlow use the legacy `.eslintrc` format?
+
+No. DevFlow generates `eslint.config.mjs`, the flat configuration format that ESLint 9 uses by default.
+
+### Which ESLint plugins are installed?
+
+`eslint` and `@eslint/js` always, `typescript-eslint` when the project has a `tsconfig.json`, the React and React Hooks plugins for React and Next.js projects, and `eslint-plugin-vue` for Vue and Nuxt projects.
+
+## Related
+
+- [Prettier module](/modules/prettier) — the formatter that pairs with this linter
+- [Husky module](/modules/husky) — run ESLint on commit
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky) — the full walkthrough
+- [CLI reference](/cli) — flags and examples

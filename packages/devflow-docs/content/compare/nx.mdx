@@ -1,0 +1,97 @@
+---
+title: DevFlow vs Nx
+description: "Nx owns the monorepo build graph, caching and generators. DevFlow writes the linting, testing, CI and Git configuration an Nx repository needs."
+---
+
+## The short version
+
+DevFlow does not replace Nx. Nx owns the build system; DevFlow owns the workflow files around it.
+
+| | Nx | DevFlow CLI |
+| --- | --- | --- |
+| Task graph and dependency detection | Yes | No |
+| Build caching | Yes | No |
+| Code generators | Yes | No |
+| Project boundary enforcement | Yes | No |
+| ESLint, Prettier configuration | Only if you add the Nx ESLint plugin | Yes |
+| Git hooks, lint-staged, Commitlint | No | Yes |
+| Vitest or Jest configuration | Only through the Nx executor | Yes |
+| CI workflow file | No — Nx runs inside your pipeline | Yes |
+| Dockerfile and compose file | No | Yes |
+| Security scanning workflows | No | Yes |
+| Dockerfile, Docker Compose | No | Yes |
+
+## Where they overlap
+
+Both tools write an `nx.json`-adjacent configuration and both can add lint and test scripts. The overlap is small and it is not a conflict.
+
+The one place it matters is the `lint` and `test` scripts at the root of an Nx repository. Nx projects usually define them per project, and the root runs them through the Nx executor. DevFlow's Turborepo module would overwrite the root `lint` script with `turbo lint` — and the wizard blocks the Nx and Turborepo modules together for exactly this reason.
+
+In an Nx repository, apply the workflow modules individually and leave the root scripts alone:
+
+```bash
+npx create-devflow --only eslint --only prettier --only vitest --only github-actions
+```
+
+The `add-script` action never replaces an existing script, so a root `lint` script that already runs `nx run-many --target=lint` is left untouched.
+
+## The recommended Nx setup
+
+```bash
+# 1. Nx owns the monorepo
+npx create-nx-workspace@latest my-org --preset=ts
+
+# 2. DevFlow owns the workflow files
+cd my-org
+npx create-devflow --only eslint --only prettier --only vitest --only github-actions --only gitleaks
+```
+
+What you end up with:
+
+| File | Owner |
+| --- | --- |
+| `nx.json` | Nx |
+| `project.json` per project | Nx |
+| `eslint.config.mjs` at the root | DevFlow |
+| `vitest.config.ts` per project | DevFlow, or Nx's Vitest executor |
+| `.github/workflows/ci.yml` | DevFlow |
+| `.husky/pre-commit`, `commitlint.config.mjs` | DevFlow |
+| `Dockerfile` per service | DevFlow |
+
+## Running the Nx executor from the DevFlow CI workflow
+
+The generated workflow runs `npm run lint` and `npm run test` at the root. In an Nx repository those scripts usually delegate to Nx, so the workflow works without changes:
+
+```json
+{
+  "scripts": {
+    "lint": "nx run-many --target=lint --all",
+    "test": "nx run-many --target=test --all",
+    "build": "nx run-many --target=build --all"
+  }
+}
+```
+
+To use Nx's caching in CI, add the Nx cloud token as a secret and the Nx setup step to the workflow. DevFlow does not generate that, because it is specific to your Nx Cloud account.
+
+## What DevFlow does not do for Nx
+
+- **It does not generate `project.json` files** or wire an ESLint executor into the Nx graph.
+- **It does not generate the Nx Cloud setup.**
+- **It does not create the Nx generators.**
+- **It does not enforce module boundaries.** Nx's `@nx/enforce-module-boundaries` rule is a separate step, and it is worth adding to the root `eslint.config.mjs` that DevFlow generates.
+
+## When to use only Nx
+
+- You need generators, the Nx graph or project boundary enforcement.
+- Your organisation already standardises on Nx and has an internal plugin package.
+- You have one repository and a small team.
+
+DevFlow earns its place in the second repository onwards, and in the repositories that are not Nx projects at all.
+
+## Related
+
+- [Monorepo module](/modules/monorepo) — the Nx and Turborepo modules
+- [Turborepo CI/CD with GitHub Actions](/guides/turborepo-ci) — the same problem, solved for Turborepo
+- [DevFlow vs Turborepo](/compare/turborepo)
+- [DevFlow vs manual setup](/compare/manual-setup)

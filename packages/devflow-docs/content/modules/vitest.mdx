@@ -1,0 +1,109 @@
+---
+title: Vitest Module
+description: "DevFlow creates a vitest.config.ts with globals, a jsdom environment for React and Vue projects and V8 coverage, plus the test scripts."
+---
+
+## The problem
+
+Vitest is fast, but a bare `vitest` install gives you a runner with no environment, no coverage and no React transform. The first test you write then fails with `document is not defined`, or React components fail to render because JSX was never transformed.
+
+The second problem is coverage. `vitest run --coverage` without a provider configured fails outright, and with the provider configured but no `include` glob, the report counts your config files and test helpers as covered source.
+
+## The command
+
+```bash
+npx create-devflow --only vitest
+```
+
+## Generated files
+
+### `vitest.config.ts` — React or Next.js project
+
+```typescript
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
+});
+```
+
+### `vitest.config.ts` — Node.js, NestJS or SvelteKit project
+
+```typescript
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
+});
+```
+
+## Packages installed
+
+| Package | Installed when |
+| --- | --- |
+| `vitest` | always |
+| `@vitejs/plugin-react` | the stack is React or Next.js |
+| `@vitejs/plugin-vue` | the stack is Vue or Nuxt |
+
+## Scripts added
+
+| Script | Command |
+| --- | --- |
+| `test` | `vitest run` |
+| `test:watch` | `vitest` |
+| `test:coverage` | `vitest run --coverage` |
+
+## Manual setup versus DevFlow
+
+The manual version is `npm i -D vitest jsdom @vitejs/plugin-react @vitest/coverage-v8` and then writing the config. The two mistakes that happen most often are forgetting the React plugin — so JSX is not transformed — and forgetting to install a coverage provider, so `test:coverage` throws.
+
+DevFlow derives the environment and the plugin from the detected stack, and generates a configuration whose coverage provider is already set.
+
+## Limits
+
+- **No coverage thresholds.** The generated config sets the V8 provider and the `text` and `lcov` reporters, but it does not set a `thresholds` block, because a threshold is a decision about your project, not a default. The [Vitest guide](/guides/vitest-react-typescript) contains the snippet to add one.
+- **No `coverage.include`.** Without it, the report includes every file V8 sees. The guide shows the `include` glob that limits coverage to your source directory.
+- **`@vitest/coverage-v8` is not installed automatically.** The `test:coverage` script needs it. Install it explicitly with `npm i -D @vitest/coverage-v8` — see the guide.
+- **No `setupFiles` reference.** The Testing Library module writes `src/test/setup.ts`, but adding it to `setupFiles` is a manual step. The guide shows the exact snippet.
+- **Conflicts with Jest.** The wizard blocks the pair.
+
+## FAQ
+
+### Does DevFlow set coverage thresholds?
+
+No. It configures the V8 provider with the `text` and `lcov` reporters, but it does not pick a threshold for you. The guide shows how to add one and how to publish the report from a pull request.
+
+### Which test environment is used?
+
+`jsdom` for React, Next.js, Vue and Nuxt projects, and `node` for Node.js, NestJS and SvelteKit projects.
+
+### How do I run a single test file?
+
+```bash
+npx vitest run src/button.test.ts
+```
+
+Or use the watch script, `npm run test:watch`, and filter by filename.
+
+## Related
+
+- [Vitest Setup for React and TypeScript](/guides/vitest-react-typescript) — coverage, CI and the setup file
+- [GitHub Actions module](/modules/github-actions) — the pipeline that runs the tests
+- [Testing reference](/docs/modules/testing) — Jest, Playwright, Cypress and MSW
+- [CLI reference](/cli)

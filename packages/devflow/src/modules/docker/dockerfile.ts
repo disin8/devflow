@@ -23,7 +23,8 @@ function buildDockerfile(ctx: ProjectContext): string {
         : pm === "bun"
           ? "bun install --frozen-lockfile"
           : "npm ci";
-  const buildCmd = pm === "npm" ? "npm run build" : `${pm} build`;
+  // `bun build` is Bun's bundler, so the script has to be invoked explicitly.
+  const buildCmd = pm === "npm" ? "npm run build" : `${pm} run build`;
   const prodInstall =
     pm === "pnpm"
       ? "corepack enable && pnpm install --frozen-lockfile --prod"

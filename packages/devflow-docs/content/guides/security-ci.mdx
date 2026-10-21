@@ -1,0 +1,188 @@
+---
+title: Security Scanning in CI
+description: "Wire dependency auditing, secret detection and container scanning into your pull request pipeline with the DevFlow security modules."
+---
+
+## The problem
+
+Three different failures, three different tools, and no shared setup:
+
+- A dependency with a known vulnerability is merged because nobody ran `npm audit`.
+- An API key is committed to a branch and the history keeps it after the commit is deleted.
+- A base image with a CVE is deployed because the image was never scanned.
+
+Each of these has a dedicated tool. The work is in the configuration, and the configuration is what gets copied between repositories until it drifts.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `audit` script | dependency audit with a high-severity threshold |
+| `.gitleaks.toml` | Gitleaks allowlist for lock files |
+| `.github/workflows/gitleaks.yml` | secret detection on every push and pull request |
+| `.github/workflows/trivy.yml` | vulnerability and misconfiguration scanning |
+| `.github/workflows/osv-scanner.yml` | dependency scanning against the OSV database |
+
+## Step 1 — apply the modules
+
+```bash
+npx create-devflow --security
+```
+
+That covers the audit script and Gitleaks. The other scanners are separate:
+
+```bash
+npx create-devflow --only trivy
+npx create-devflow --only osv-scanner
+```
+
+## Step 2 — add the audit to the pipeline
+
+The `audit` script is not wired into CI automatically, because the threshold and the failure behaviour are decisions. Add a step to `.github/workflows/ci.yml`:
+
+```yaml
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high
+```
+
+The `high` threshold is deliberate. A low-severity advisory should not be able to block a pull request, but a high-severity one should.
+
+If your project uses pnpm workspaces, audit every workspace:
+
+```yaml
+      - name: Audit dependencies
+        run: pnpm -r audit --audit-level=high
+```
+
+## Step 3 — set the Gitleaks licence for private repositories
+
+The generated workflow reads two secrets:
+
+```yaml
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+`GITHUB_TOKEN` is provided automatically by GitHub. `GITLEAKS_LICENSE` is not — for a private repository you have to add it under **Settings → Secrets and variables → Actions**. Public repositories work without it.
+
+## Step 4 — extend the allowlist
+
+The generated `.gitleaks.toml` only excludes dependency lock files:
+
+```toml
+title = "Gitleaks config"
+
+[allowlist]
+  description = "Allowlisted patterns"
+  paths = [
+    '''node_modules''',
+    '''pnpm-lock.yaml''',
+    '''package-lock.json''',
+    '''yarn.lock''',
+  ]
+```
+
+If your repository has legitimate secrets in test fixtures or documentation examples, add those paths. Otherwise every pull request fails on a false positive.
+
+```toml
+[allowlist]
+  description = "Allowlisted patterns"
+  paths = [
+    '''node_modules''',
+    '''pnpm-lock.yaml''',
+    '''package-lock.json''',
+    '''yarn.lock''',
+    '''tests/fixtures''',
+    '''docs/examples''',
+  ]
+```
+
+## Step 5 — add container scanning
+
+The Trivy workflow scans the repository. To scan the image you build, add a step to the Docker job:
+
+```yaml
+      - name: Scan image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+```
+
+`exit-code: '1'` makes a finding fail the pipeline. Remove it if you want the report without blocking.
+
+## Step 6 — enable the GitHub-native controls
+
+Two controls are not files but repository settings, so DevFlow does not generate them:
+
+| Control | Where | What it does |
+| --- | --- | --- |
+| CodeQL analysis | **Settings → Code security → CodeQL** | Runs a semantic analysis of the code on every pull request |
+| Dependency review | **Settings → Advanced → Dependency graph** | Blocks a pull request that introduces a vulnerable dependency |
+
+Both are free on public repositories.
+
+## Step 7 — what a failing run looks like
+
+```text
+Run pnpm audit --audit-level=high
+  ╭ Warning ────────────────────────────────────────────────╮
+  │                                                          │
+  │   high severity vulnerability                           │
+  │                                                          │
+  │   glob  →  minimist@1.2.5                               │
+  │   severity  →  high                                     │
+  │   advisory  →  https://github.com/advisories/GHSA-xv6h  │
+  │                                                          │
+  ╰──────────────────────────────────────────────────────────╯
+```
+
+```text
+Run gitleaks/gitleaks-action@v2
+  Scanning 214 commits
+  Finding:  src/config.ts
+  Secret:   AKIAIOSFODNN7EXAMPLE
+  RuleID:   aws-access-token
+  Entropy:  3.51
+```
+
+## Manual setup versus DevFlow
+
+The manual version is three workflow files from three repositories, each pinned to a different action version, plus a `GITLEAKS_LICENSE` secret that is easy to forget. DevFlow writes the workflows, the allowlist and the audit script in one pass, with the same action versions everywhere.
+
+## Limits
+
+- **Gitleaks needs a licence key for private repositories.** Public repositories are fine.
+- **The audit script is not in the generated CI workflow.** Step 2 adds it.
+- **No CodeQL or dependency-review workflow file.** They are repository settings, and the guide points at where they live.
+- **The Trivy and OSV-Scanner workflows are separate modules.** `--security` does not include them.
+- **The allowlist is minimal.** Extend it before you enable the workflow on a repository with test fixtures.
+- **Trivy and OSV-Scanner run as container actions**, so they pull a container image on every run.
+
+## FAQ
+
+### Do I need a Gitleaks licence for a private repository?
+
+Yes. The Gitleaks action requires a `GITLEAKS_LICENSE` secret for private repositories. Public repositories work without one.
+
+### Does npm audit run automatically?
+
+No. The module adds an `audit` script and a Gitleaks workflow. Wiring the audit into the pipeline is step 2.
+
+### Will npm audit fail my build on low-severity issues?
+
+No. The generated audit command uses a high-severity threshold, so low and moderate findings are reported without failing the command.
+
+### Does DevFlow scan the whole Git history?
+
+The generated Gitleaks workflow checks out the repository with `fetch-depth: 0`, so the scan covers the full history rather than only the latest commit.
+
+## Related
+
+- [Security module](/modules/security) — what the security modules generate
+- [GitHub Actions module](/modules/github-actions) — the pipeline the checks attach to
+- [Docker setup for NestJS](/guides/nestjs-docker) — build the image this guide scans
+- [Security policy](https://github.com/disin8/devflow/blob/main/SECURITY.md) — how to report a vulnerability in DevFlow itself

@@ -1,13 +1,37 @@
-import { source } from "@/lib/source";
+import { compareSource, guidesSource, modulesSource, source } from "@/lib/source";
+import { SITE_URL } from "@/lib/site";
 
 export const revalidate = false;
 
-export async function GET() {
-  const lines: string[] = [];
-  lines.push("# Documentation");
-  lines.push("");
-  for (const page of source.getPages()) {
-    lines.push(`- [${page.data.title}](${page.url}): ${page.data.description}`);
+interface TextPage {
+  url: string;
+  data: {
+    title: string;
+    description?: string;
+    getText: (type: "raw" | "processed") => Promise<string>;
+  };
+}
+
+async function render(page: TextPage): Promise<string> {
+  let processed = "";
+  try {
+    processed = await page.data.getText("processed");
+  } catch {
+    processed = page.data.description ?? "";
   }
-  return new Response(lines.join("\n"));
+
+  return `# ${page.data.title}\n\nSource: ${SITE_URL}${page.url}\n\n${processed}`;
+}
+
+export async function GET() {
+  const pages: TextPage[] = [
+    ...(source.getPages() as unknown as TextPage[]),
+    ...(modulesSource.getPages() as unknown as TextPage[]),
+    ...(guidesSource.getPages() as unknown as TextPage[]),
+    ...(compareSource.getPages() as unknown as TextPage[]),
+  ];
+
+  const rendered = await Promise.all(pages.map(render));
+
+  return new Response(rendered.join("\n\n---\n\n"));
 }

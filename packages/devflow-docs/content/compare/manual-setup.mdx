@@ -1,0 +1,86 @@
+---
+title: DevFlow vs Manual Setup
+description: "An honest comparison between configuring ESLint, Prettier, Husky, Vitest and CI by hand and generating them with DevFlow CLI."
+---
+
+## The short version
+
+Manual setup is not wrong. It is *unrepeatable*, and that only becomes a problem when you set up the second repository.
+
+## Where the time actually goes
+
+The setup itself is not the expensive part. Writing one `eslint.config.mjs` is ten minutes. The expensive part is everything around it:
+
+| Task | By hand | With DevFlow |
+| --- | --- | --- |
+| Find the current flat config syntax for your stack | 15–30 min | 0 — generated for the detected stack |
+| Decide which plugin set is correct for React vs Vue vs Node | 15 min | 0 — derived from dependencies |
+| Install 7–12 packages without a version conflict | 10 min | 0 — one command |
+| Write the Prettier config and remember the ignore list | 10 min | 0 — config and ignore file together |
+| Write the `pre-commit` hook and remember the `prepare` script | 20 min | 0 — hook and script together |
+| Write the CI workflow and get the install command right for your package manager | 30 min | 0 — generated per package manager |
+| Match the CI step names to the scripts you actually added | 10 min | 0 — same definitions |
+| **Total, first repository** | **~2 hours** | **~1 minute** |
+| **Total, second repository** | **~2 hours again** | **~1 minute again** |
+
+Two hours is a real number, and it is also the number that makes people accept a mediocre setup: nobody wants to spend two hours on ESLint for a side project, so the config stays minimal and drifts.
+
+## What copy-paste actually costs
+
+Copying a config from another repository is faster than writing one, and it works right up to the moment the context differs:
+
+| Copied from a project that… | Breaks when you… |
+| --- | --- |
+| uses pnpm | use npm — `pnpm lint` is not an npm script |
+| uses React | use Vue — the React plugin fails to load |
+| has no TypeScript | add TypeScript — the parser is missing |
+| runs on Node 18 | support Node 22 — the CI matrix is wrong |
+| uses Jest | switch to Vitest — the test command is wrong |
+| builds to `dist/` | build to `build/` — the Dockerfile copies the wrong path |
+
+Each of these is a one-line fix. The problem is that each one is a *silent* failure until someone hits it — usually in CI, usually at the worst time.
+
+DevFlow regenerates the configuration from the detected context, so the same command produces a correct result in a pnpm monorepo and in an npm single-package repository.
+
+## Where manual setup is genuinely better
+
+| Situation | Why manual wins |
+| --- | --- |
+| You want one unusual, hand-tuned rule set | DevFlow generates a baseline; you still edit it afterwards, and there is a one-time cost |
+| You have an internal ESLint config package | A private shared config is usually the right answer for a large organisation |
+| The team is one person and one repository | The two hours are a fixed cost you will never amortise |
+| You want to understand every line | Reading generated output is faster than reading a config you did not write |
+| A security review requires a documented rationale per rule | A generated config has no rationale |
+
+None of these argue against DevFlow. They argue against using it in place of a shared internal config package, and against using it in a repository that will never be duplicated.
+
+## The honest comparison
+
+| | Manual | DevFlow |
+| --- | --- | --- |
+| Cost of the first setup | ~2 hours | ~1 minute |
+| Cost of the tenth setup | ~20 hours | ~10 minutes |
+| Correct for a different stack | You have to fix it | Generated per stack |
+| Works with pnpm, yarn, bun, npm | You have to edit the commands | Generated per package manager |
+| Reproducible | No | Yes |
+| Reviewable | Yes | Yes — the output is plain config in your repository |
+| Customisable | Yes | Yes — edit the generated files, they are never overwritten |
+| Requires a second tool | No | Yes — `npx create-devflow` |
+| Teaches you the tools | Yes | No |
+
+## The migration path
+
+If you already have a working setup and only want to fix the parts that are wrong:
+
+1. Run `npx create-devflow --dry-run --all` and read the plan.
+2. Apply only the modules you are missing: `--only github-actions`, `--only vitest`, `--only dockerfile`.
+3. Existing config files are never overwritten, so your working setup stays working.
+4. Move the remaining modules over one at a time, once you are happy with the result.
+
+You do not have to adopt all 50 modules. Most teams end up with eight or nine.
+
+## Related
+
+- [CLI reference](/cli) — the `--only` flag and the rest
+- [Modules](/modules) — what each module generates
+- [Presets](/docs/presets) — the bundles people start from

@@ -1,6 +1,6 @@
 ---
 title: CI/CD
-description: "Generate GitHub Actions CI/CD pipelines, GitLab CI configs, Renovate, and Dependabot configurations for Node.js projects automatically. Complete lint → typecheck → test → build workflow out of the box."
+description: "Generate GitHub Actions workflows, GitLab CI pipelines and Dependabot or Renovate configuration for Node.js projects in one command."
 ---
 
 ## GitHub Actions
@@ -70,17 +70,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm run lint
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm run typecheck
         continue-on-error: true
 
       - name: Test
-        run: pnpm test
+        run: pnpm run test
 
       - name: Build
-        run: pnpm build
+        run: pnpm run build
 ```
 
 ---

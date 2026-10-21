@@ -1,6 +1,6 @@
 ---
 title: Code Quality
-description: "Automatically set up ESLint, Prettier, or Biome in any JavaScript/TypeScript project. DevFlow generates stack-aware configs for React, Next.js, Vue, NestJS, and plain TypeScript — no manual configuration needed."
+description: "Set up ESLint, Prettier or Biome in a JavaScript or TypeScript project. DevFlow generates stack-aware flat configs for React, Vue and NestJS."
 ---
 
 ## ESLint
@@ -16,7 +16,7 @@ description: "Automatically set up ESLint, Prettier, or Biome in any JavaScript/
 ### What it does
 
 - Installs `eslint`, `@eslint/js`, and stack-specific plugins
-- Creates `eslint.config.js` with flat config
+- Creates `eslint.config.mjs` with flat config
 - Adds `lint` and `lint:fix` scripts
 
 ### Stack-Aware Configuration
@@ -67,7 +67,7 @@ export default [
 ### What it does
 
 - Installs `prettier`
-- Creates `.prettierrc` and `.prettierignore`
+- Creates `.prettierrc.json` and `.prettierignore`
 - Adds `format` and `format:check` scripts
 
 ---

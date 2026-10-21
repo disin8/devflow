@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { SectionHeader } from "./section-header";
-import { Button } from "./button";
+import { SectionTag } from "./section-tag";
 
 type Segment = { text: string; color: "accent" | "muted" | "white" | "green" | "red" };
 type Line = { num: number; segments: Segment[] };
@@ -37,7 +37,7 @@ const accordionItems = [
       { num: 5, segments: [{ text: "  ◉  ", color: "accent" }, { text: "Testing      ", color: "white" }, { text: "(Vitest + coverage)", color: "muted" }] },
       { num: 6, segments: [{ text: "  ◉  ", color: "accent" }, { text: "CI/CD        ", color: "white" }, { text: "(GitHub Actions)", color: "muted" }] },
       { num: 7, segments: [{ text: "  ◯  ", color: "muted" }, { text: "Docker       ", color: "muted" }, { text: "(Dockerfile + compose)", color: "muted" }] },
-      { num: 8, segments: [{ text: "  ◯  ", color: "muted" }, { text: "Security     ", color: "muted" }, { text: "(audit + snyk)", color: "muted" }] },
+      { num: 8, segments: [{ text: "  ◯  ", color: "muted" }, { text: "Security     ", color: "muted" }, { text: "(audit + gitleaks)", color: "muted" }] },
       { num: 9, segments: [] },
       { num: 10, segments: [{ text: "  4 modules selected", color: "accent" }] },
     ] as Line[],
@@ -49,22 +49,22 @@ const accordionItems = [
     lines: [
       { num: 1, segments: [{ text: "$ ", color: "muted" }, { text: "npx create-devflow --dry-run", color: "accent" }] },
       { num: 2, segments: [] },
-      { num: 3, segments: [{ text: "  Dry run — no files will be written", color: "muted" }] },
+      { num: 3, segments: [{ text: "  Execution Plan", color: "muted" }] },
       { num: 4, segments: [] },
       { num: 5, segments: [{ text: "  + ", color: "green" }, { text: ".husky/pre-commit", color: "white" }] },
       { num: 6, segments: [{ text: "  + ", color: "green" }, { text: ".husky/commit-msg", color: "white" }] },
-      { num: 7, segments: [{ text: "  + ", color: "green" }, { text: "eslint.config.js", color: "white" }] },
+      { num: 7, segments: [{ text: "  + ", color: "green" }, { text: "eslint.config.mjs", color: "white" }] },
       { num: 8, segments: [{ text: "  ~ ", color: "accent" }, { text: "package.json  ", color: "white" }, { text: "(scripts updated)", color: "muted" }] },
       { num: 9, segments: [{ text: "  + ", color: "green" }, { text: "vitest.config.ts", color: "white" }] },
       { num: 10, segments: [{ text: "  + ", color: "green" }, { text: ".github/workflows/ci.yml", color: "white" }] },
       { num: 11, segments: [] },
-      { num: 12, segments: [{ text: "  6 files", color: "accent" }, { text: " · 0 conflicts", color: "muted" }] },
+      { num: 12, segments: [{ text: "  Files to create: 6", color: "accent" }, { text: " · nothing written", color: "muted" }] },
     ] as Line[],
   },
   {
     step: "04",
     title: "Apply & go",
-    description: "Progress spinners, per-module summaries, and a final report. Your repo is production-ready — push and your CI pipeline is already green.",
+    description: "Progress spinners, per-module summaries and a final report listing every file created, package installed and script added. Nothing is written until you confirm.",
     lines: [
       { num: 1, segments: [{ text: "  Applying modules...", color: "muted" }] },
       { num: 2, segments: [] },
@@ -74,35 +74,27 @@ const accordionItems = [
       { num: 6, segments: [{ text: "  ✓  ", color: "accent" }, { text: "Vitest      ", color: "white" }, { text: "— config + scripts", color: "muted" }] },
       { num: 7, segments: [{ text: "  ✓  ", color: "accent" }, { text: "CI/CD       ", color: "white" }, { text: "— workflow added", color: "muted" }] },
       { num: 8, segments: [] },
-      { num: 9, segments: [{ text: "  🎉 ", color: "white" }, { text: "4 modules applied", color: "accent" }, { text: " — 0 errors", color: "muted" }] },
-      { num: 10, segments: [{ text: "  Push to trigger your first pipeline.", color: "muted" }] },
+      { num: 9, segments: [{ text: "  ✅ Success Summary", color: "white" }] },
+      { num: 10, segments: [{ text: "  Created files: 6 · Scripts added: 4", color: "muted" }] },
     ] as Line[],
   },
 ];
 
 const colorMap: Record<string, string> = {
   accent: "text-accent",
-  muted: "text-code",
-  white: "text-white",
-  green: "text-emerald-400",
+  muted: "text-code-dim",
+  white: "text-foreground",
+  green: "text-accent",
   red: "text-red-400",
 };
 
 function StepPreview({ lines }: { lines: Line[] }) {
-  const localColorMap: Record<string, string> = {
-    accent: "text-accent",
-    muted: "text-code",
-    white: "text-foreground",
-    green: "text-emerald-400",
-    red: "text-red-400",
-  };
-
   return (
-    <div className={`glass-adaptive rounded-3xl overflow-hidden w-full h-fit`}>
-      <div className={`flex items-center gap-1.5 px-5 py-4 border-b border-line`}>
-        <span className={`w-3 h-3 rounded-full bg-line/10`} />
-        <span className={`w-3 h-3 rounded-full bg-line/10`} />
-        <span className={`w-3 h-3 rounded-full bg-line/10`} />
+    <div className="glass-adaptive relative z-10 w-full overflow-hidden rounded-3xl">
+      <div className="flex items-center gap-1.5 border-b border-line px-5 py-3.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-foreground/20" />
+        <span className="h-2.5 w-2.5 rounded-full bg-foreground/20" />
+        <span className="h-2.5 w-2.5 rounded-full bg-foreground/20" />
       </div>
       <div className="p-6 font-roboto-mono text-[13px] leading-[1.7em]">
         {lines.map((line) => (
@@ -112,7 +104,7 @@ function StepPreview({ lines }: { lines: Line[] }) {
             </span>
             <span>
               {line.segments.map((seg, si) => (
-                <span key={si} className={localColorMap[seg.color]}>
+                <span key={si} className={colorMap[seg.color]}>
                   {seg.text}
                 </span>
               ))}
@@ -143,18 +135,18 @@ export function SliderSection() {
   }, [activeIndex, accordionItems.length]);
 
   return (
-    <section className="py-24">
+    <section className="py-24 max-md:py-12">
       <div className="mx-auto max-w-7xl px-10 max-md:px-5">
         <div className="mb-16">
           <SectionHeader
-            tag="How it works"
+            tag={<SectionTag>How it works</SectionTag>}
             title="From zero to fully configured in minutes"
             description="Run one command. DevFlow walks you through four simple steps — no manual config, no copy-pasted boilerplate."
             centered
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 relative">
           <div className="flex flex-col gap-2">
             {accordionItems.map((item, i) => (
               <button
@@ -193,11 +185,11 @@ export function SliderSection() {
             ))}
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl bg-code-preview">
-            <div className="relative aspect-square p-6 flex items-center h-fit">
+          <div className="relative flex items-center">
+            <div className="relative w-full">
+              <div className="pointer-events-none absolute -inset-8 bg-code-glow opacity-60" />
               <StepPreview lines={accordionItems[activeIndex].lines} />
             </div>
-            <div className="absolute inset-0 pointer-events-none opacity-40 bg-code-glow" />
           </div>
         </div>
       </div>

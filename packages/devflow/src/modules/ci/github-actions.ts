@@ -15,7 +15,8 @@ function buildWorkflow(ctx: ProjectContext): string {
         : pm === "bun"
           ? "bun install --frozen-lockfile"
           : "npm ci";
-  const runPrefix = pm === "npm" ? "npm run" : pm;
+
+  const runPrefix = pm === "npm" ? "npm run" : `${pm} run`;
 
   const setupPnpm =
     pm === "pnpm"
@@ -34,6 +35,8 @@ function buildWorkflow(ctx: ProjectContext): string {
         uses: oven-sh/setup-bun@v2
 `
       : "";
+
+  const cache = pm === "bun" ? undefined : pm;
 
   return `name: CI
 
@@ -62,7 +65,11 @@ ${setupPnpm}${setupBun}
         uses: actions/setup-node@v4
         with:
           node-version: \${{ matrix.node-version }}
-          cache: '${pm === "bun" ? "npm" : pm}'
+          ${
+            cache
+              ? `cache: '${cache}'`
+              : "# bun is installed by oven-sh/setup-bun, so there is no node_modules cache to restore"
+          }
 
       - name: Install dependencies
         run: ${installCmd}

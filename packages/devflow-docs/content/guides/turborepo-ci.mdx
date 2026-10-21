@@ -1,0 +1,234 @@
+---
+title: Turborepo CI/CD with GitHub Actions and pnpm Workspaces
+description: "Add Turborepo remote caching, affected-package filtering and parallel lint, test and build tasks to a pnpm workspace, and share one ESLint config."
+---
+
+## The problem
+
+In a monorepo, three things break at scale. The pipeline runs every package even when one changed. The same ESLint config is copied into every package and drifts. And a shared configuration change has to be repeated in twelve places.
+
+Turborepo solves the first problem with a task graph and a cache. It does not solve the second — the shared ESLint config is still your job, and it is the part most guides skip.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `turbo.json` | the task graph and cache inputs |
+| `pnpm-workspace.yaml` | the workspace packages |
+| `tsconfig.base.json` | the shared TypeScript compiler options |
+| `package.json` scripts | `build`, `lint`, `test`, `dev`, `lint:all`, `test:all` |
+
+## Step 1 — apply the modules
+
+```bash
+npx create-devflow --only turborepo --only workspaces
+```
+
+If the workspace already exists, the workspaces module keeps your `pnpm-workspace.yaml` and only adds the shared `tsconfig.base.json` and the workspace scripts.
+
+## Step 2 — check the task graph
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+`dependsOn: ["^build"]` means a package is built after its dependencies. `outputs: ["dist/**"]` tells Turborepo which files to cache — without it, the cache stores nothing useful.
+
+## Step 3 — add remote caching to the workflow
+
+The generated CI workflow caches package-manager downloads but not Turborepo task outputs. Add remote caching:
+
+```yaml
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Lint
+        run: pnpm turbo lint --filter=...[origin/main]
+
+      - name: Typecheck
+        run: pnpm turbo typecheck --filter=...[origin/main]
+
+      - name: Test
+        run: pnpm turbo test --filter=...[origin/main]
+
+      - name: Build
+        run: pnpm turbo build --filter=...[origin/main]
+```
+
+Two details make the difference:
+
+- **`--filter=...[origin/main]`** runs the task only for the packages that changed relative to the main branch, plus everything that depends on them. The `...` prefix means "this package and its dependents", the `...` suffix means "this package and its dependencies".
+- **`restore-keys`** restores the most recent cache even when the exact key is missing, so a new commit still starts from a warm cache.
+
+## Step 4 — the pull request variant
+
+On a pull request the base branch is not `origin/main` locally, so fetch it first:
+
+```yaml
+      - name: Fetch base branch
+        run: git fetch origin ${{ github.base_ref || 'main' }} --depth=1
+
+      - name: Lint changed packages
+        run: pnpm turbo lint --filter=...[origin/${{ github.base_ref || 'main' }}]
+```
+
+## Step 5 — share one ESLint config
+
+This is the part that is usually copied twelve times. The fix is a single root config that every package imports.
+
+**Step 5a — the root config.** `eslint.config.mjs` at the repository root:
+
+```javascript
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { react, 'react-hooks': reactHooks },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', '**/.next/**', '**/coverage/**'],
+  },
+];
+```
+
+**Step 5b — each package re-exports it.** `packages/ui/eslint.config.mjs`:
+
+```javascript
+import rootConfig from '../../eslint.config.mjs';
+
+export default [
+  ...rootConfig,
+  {
+    files: ['**/*.{ts,tsx}'],
+  },
+];
+```
+
+**Step 5c — point the root script at the packages.** `package.json`:
+
+```json
+{
+  "scripts": {
+    "lint": "turbo lint"
+  }
+}
+```
+
+And each package keeps its own `lint` script so Turborepo can call it:
+
+```json
+{
+  "scripts": {
+    "lint": "eslint ."
+  }
+}
+```
+
+The alternative — a shared `@repo/eslint-config` package — is better once you publish it, but the re-export approach needs no extra package and works immediately.
+
+## Step 6 — share the TypeScript configuration
+
+`tsconfig.base.json` at the root holds the compiler options. Each package extends it:
+
+```json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}
+```
+
+The `composite: true` flag in the base config is what lets a package build against the build output of its dependencies.
+
+## What the CI run looks like
+
+```text
+Run pnpm turbo lint --filter=...[origin/main]
+  Packages in scope: @repo/ui, @repo/api, @repo/web
+  @repo/ui:lint cache miss, executing 8d3f1a2c
+  @repo/ui:lint done in 1.2s
+  @repo/api:lint cache hit, replaying logs (1.1s)
+  @repo/web:lint cache miss, executing 5b9e4d1f
+  @repo/web:lint done in 2.4s
+  Tasks:    3 total, 2 successful, 3 cached (67%)
+```
+
+## Manual setup versus DevFlow
+
+The manual version is: write `turbo.json` by hand, learn the `--filter` syntax from the Turborepo docs, copy the ESLint config into every package, and add a cache block to the workflow by copying it from another repository. DevFlow writes the task graph and the workspace configuration; the caching block and the shared config are the two steps this guide walks through in full.
+
+## Limits
+
+- **The generated CI workflow is not monorepo-aware.** Steps 3 and 4 are the diff that makes it so.
+- **A shared ESLint config is not generated.** The ESLint module writes a root config; wiring the packages to it is step 5.
+- **Remote caching uses the GitHub Actions cache**, not the Turborepo Cloud remote cache. Turborepo Cloud gives you cross-run and cross-branch cache sharing without a self-hosted cache; add it with `turbo login` and `turbo link`.
+- **`--filter=...[origin/main]`** needs the base branch to be fetched. On a pull request, step 4 fetches it.
+- **Nx and Turborepo conflict.** The wizard blocks the pair.
+
+## FAQ
+
+### Does the generated CI pipeline cache Turborepo results?
+
+No. The generated workflow caches package-manager downloads, not Turborepo task outputs. Step 3 shows the diff that adds the Turborepo cache.
+
+### How do I run only the packages affected by a pull request?
+
+Use the filter with the base branch: `turbo run lint test --filter=...[origin/main]`. The `...` prefix includes the dependents of the changed packages, which is what you need — a change in a shared package must be checked in everything that depends on it.
+
+### How do I share one ESLint config across the packages?
+
+Put the config at the repository root and have each package's `eslint.config.mjs` re-export it. Step 5 has the three files.
+
+### Does DevFlow generate a monorepo-aware CI pipeline?
+
+Not by default. The generated workflow is a single-repository pipeline, and this guide is the diff between the two.
+
+## Related
+
+- [Monorepo module](/modules/monorepo) — what the monorepo modules generate
+- [GitHub Actions module](/modules/github-actions) — the pipeline this guide modifies
+- [ESLint module](/modules/eslint) — the root config
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)

@@ -5,10 +5,14 @@ import {
   DocsPage,
   DocsTitle,
 } from 'fumadocs-ui/layouts/docs/page';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getMDXComponents } from '@/mdx-components';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
+import { buildPageMetadata, breadcrumbSchema, faqSchema, techArticleSchema } from '@/lib/seo';
+import { faqsFor } from '@/lib/faqs';
+import { keywordsFor } from '@/lib/keywords';
+import { JsonLd } from '@/components/json-ld';
 
 const BASE_URL = 'https://dev-flow.xyz';
 
@@ -20,39 +24,37 @@ interface PageSEO {
 
 const PAGE_SEO_MAP: Record<string, PageSEO> = {
   '': {
-    title: 'DevFlow Documentation – Automate Your Dev Workflow Setup',
+    title: 'DevFlow Docs — Modules, Wizard and CLI Reference',
     description:
-      'Complete guide to DevFlow CLI. Learn how to automatically add Husky, ESLint, Prettier, Vitest, GitHub Actions, Docker, Commitlint, and more to any JavaScript/TypeScript project.',
+      'Reference for DevFlow CLI: install it, run the wizard, choose a preset, preview changes with --dry-run and read the full flag list.',
     keywords: [
       'devflow documentation',
-      'how to automate nodejs project setup',
-      'developer workflow setup guide',
       'create-devflow getting started',
-      'scaffold dev tools automatically',
+      'how to automate nodejs project setup',
       'nodejs project configuration guide',
       'javascript tooling setup tutorial',
+      'developer workflow setup guide',
     ],
   },
   installation: {
-    title: 'Install DevFlow – npx create-devflow Setup Guide',
+    title: 'Install DevFlow CLI — npx, npm, pnpm, yarn, bun',
     description:
-      'How to install DevFlow with npx, npm, pnpm, yarn, or bun. One-command CLI tool to scaffold your entire development workflow. Works with any Node.js project.',
+      'Install DevFlow CLI with npx, npm, pnpm, yarn or bun. Node.js 18, 20 and 22 are supported. One command to set up your workflow.',
     keywords: [
       'npx create-devflow install',
-      'how to install devflow',
+      'how to install devflow cli',
       'npm install create-devflow globally',
       'pnpm dlx create-devflow',
       'bunx create-devflow',
       'yarn dlx create-devflow',
-      'devflow node 18 requirements',
+      'create-devflow node 18 requirements',
       'install developer workflow cli',
-      'run devflow without installing',
     ],
   },
   'quick-start': {
-    title: 'DevFlow Quick Start – Bootstrap Dev Workflow in 2 Minutes',
+    title: 'DevFlow Quick Start — 2-Minute Workflow Setup',
     description:
-      'Get your development workflow up and running in under 2 minutes. Run npx create-devflow, follow the interactive wizard, and automatically configure Git hooks, linting, testing, and CI/CD.',
+      'Run npx create-devflow, follow the wizard and generate ESLint, Prettier, Husky, Vitest, GitHub Actions and Docker config.',
     keywords: [
       'how to set up dev workflow in 2 minutes',
       'bootstrap javascript project workflow',
@@ -61,13 +63,12 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'interactive nodejs project wizard',
       'set up eslint prettier husky one command',
       'automate project configuration nodejs',
-      'devflow quick setup guide',
     ],
   },
   configuration: {
-    title: 'DevFlow Configuration – Package Manager & Stack Auto-Detection',
+    title: 'DevFlow Configuration — How Detection Works',
     description:
-      'How DevFlow detects your package manager, TypeScript, React/Next.js/Vue/NestJS stack, and monorepo setup automatically. Override defaults with CLI flags.',
+      'How DevFlow detects your package manager, TypeScript, stack and monorepo layout, and which CLI flags override the result.',
     keywords: [
       'devflow auto detect project stack',
       'detect pnpm yarn npm bun automatically',
@@ -75,14 +76,13 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'detect react nextjs vue nestjs stack',
       'detect monorepo nx turborepo',
       'override package manager cli flag',
-      'devflow --pm flag',
       'nodejs project context detection',
     ],
   },
   presets: {
-    title: 'DevFlow Presets – Minimal, Recommended & Full Workflow Config',
+    title: 'DevFlow Presets — Minimal, Recommended and Full',
     description:
-      'Skip the wizard with DevFlow presets. Choose Minimal, Recommended, or Full preset — each tailored to your detected stack (React, Next.js, Vue, NestJS, Node.js).',
+      'Skip the wizard with a DevFlow preset. Minimal, Recommended or Full — each one adapted to the detected stack, with the exact modules and files it adds.',
     keywords: [
       'devflow preset minimal recommended full',
       'skip setup wizard use preset',
@@ -91,13 +91,12 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'recommended nodejs project config',
       'react preset devflow',
       'nextjs preset devflow',
-      'best nodejs project setup 2026',
     ],
   },
   'dry-run': {
-    title: 'DevFlow Dry Run – Preview All Changes Before Applying',
+    title: 'DevFlow Dry Run — Preview Every Change First',
     description:
-      'Use --dry-run mode to safely preview every file, package installation, and script change before DevFlow touches your project.',
+      'Use --dry-run to see every file DevFlow would create, every package it would install and every script it would add.',
     keywords: [
       'devflow --dry-run preview',
       'preview cli changes before applying',
@@ -105,13 +104,12 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'see what devflow will do',
       'safe cli dry run mode',
       'preview files packages scripts devflow',
-      'check devflow output before running',
     ],
   },
   'cli-reference': {
-    title: 'DevFlow CLI Reference – All Commands, Flags & Options',
+    title: 'DevFlow CLI Reference — All Commands and Flags',
     description:
-      'Complete CLI reference for DevFlow: all commands, flags, and options. Use --husky, --lint, --ci, --docker, --all and more to skip the interactive wizard.',
+      'Complete DevFlow CLI reference: every command, flag and option, with defaults and examples. Use --husky, --lint, --ci, --docker, --all and more to skip the interactive wizard.',
     keywords: [
       'devflow cli flags list',
       'create-devflow command options',
@@ -122,14 +120,13 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'devflow --all flag',
       'devflow --yes non-interactive',
       'devflow --pm package manager flag',
-      'skip interactive wizard devflow',
       'devflow command line reference',
     ],
   },
   wizard: {
-    title: 'DevFlow Interactive Wizard – Step-by-Step Setup Guide',
+    title: 'DevFlow Interactive Wizard — Step-by-Step Guide',
     description:
-      'How the DevFlow interactive wizard works: auto-detects your stack, lets you pick modules with checkboxes, fine-tunes settings, and shows a full execution plan before applying.',
+      'How the DevFlow interactive wizard works: auto-detection, module selection, settings, and the execution plan before anything is applied.',
     keywords: [
       'devflow interactive wizard steps',
       'how does devflow wizard work',
@@ -141,9 +138,9 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
     ],
   },
   'modules/index': {
-    title: 'DevFlow Module Catalogue – 40+ Dev Tools Automated',
+    title: 'DevFlow Module Catalogue — 50 Modules',
     description:
-      'Browse all 40+ DevFlow modules: Git hooks (Husky, lint-staged), ESLint, Prettier, Biome, Vitest, Jest, Playwright, GitHub Actions, Docker, semantic-release, and more.',
+      'Browse all 50 DevFlow modules: Git hooks, ESLint, Prettier, Biome, Vitest, Jest, Playwright, GitHub Actions, Docker, Turborepo, Nx, semantic-release and more.',
     keywords: [
       'devflow all modules list',
       'automate husky eslint prettier vitest github-actions docker',
@@ -151,13 +148,12 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'what can devflow install',
       'git hooks linting testing ci docker automation',
       'available devflow modules',
-      'scaffold 40 dev tools one command',
     ],
   },
   'modules/git': {
-    title: 'Add Husky, Commitlint & lint-staged to Any Project – DevFlow',
+    title: 'Husky, Commitlint and lint-staged — DevFlow',
     description:
-      'Automatically set up Husky pre-commit hooks, lint-staged, Commitlint, and Commitizen in any Node.js/TypeScript project. Enforce conventional commits with one command: npx create-devflow.',
+      'Set up Husky pre-commit hooks, lint-staged, Commitlint and Commitizen in a Node.js or TypeScript project. Enforce Conventional Commits with npx create-devflow.',
     keywords: [
       'how to add husky',
       'how to add husky to nodejs project',
@@ -166,18 +162,15 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'how to configure lint-staged',
       'setup commitlint conventional commits',
       'enforce commit message format nodejs',
-      'commitizen interactive commit cli',
-      'husky vs lefthook which to use',
       'git commit hooks automation javascript',
       'add pre-commit hook to project',
       'husky prepare script package.json',
-      '.husky directory setup',
     ],
   },
   'modules/quality': {
-    title: 'Add ESLint, Prettier & Biome Automatically – DevFlow',
+    title: 'ESLint, Prettier and Biome — DevFlow Modules',
     description:
-      'Set up ESLint, Prettier, or Biome in any JavaScript/TypeScript project automatically. DevFlow generates stack-specific configs for React, Next.js, Vue, NestJS, and TypeScript with one command.',
+      'Set up ESLint, Prettier or Biome in a JavaScript project. DevFlow generates stack-aware flat configs for React, Vue and NestJS.',
     keywords: [
       'how to add eslint',
       'how to add eslint to nodejs project',
@@ -185,77 +178,67 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'setup prettier nodejs project',
       'eslint prettier together typescript',
       'react eslint rules configuration',
-      'nextjs eslint setup 2026',
+      'nextjs eslint setup',
       'nestjs eslint config generator',
       'biome vs eslint prettier replacement',
-      'install biome linter formatter',
-      'auto generate eslint.config.js',
+      'auto generate eslint.config.mjs',
       'eslint plugin react hooks setup',
       'typescript-eslint setup tutorial',
-      'prettier .prettierrc generator',
     ],
   },
   'modules/testing': {
-    title: 'Set Up Vitest, Jest, Playwright & Cypress Automatically – DevFlow',
+    title: 'Vitest, Jest, Playwright, Cypress — DevFlow',
     description:
-      'Add Vitest, Jest, Playwright, Cypress, Testing Library, or MSW to your JavaScript project with zero manual configuration. DevFlow creates all config files, installs packages, and adds npm scripts.',
+      'Add Vitest, Jest, Playwright, Cypress, Testing Library or MSW to a JavaScript project, with the configs and npm scripts.',
     keywords: [
       'how to setup vitest typescript',
       'vitest config ts generator',
       'add jest to typescript project',
-      'jest vs vitest which to use 2026',
+      'jest vs vitest which to use',
       'playwright setup e2e testing nodejs',
       'cypress vs playwright which to choose',
       'testing library react setup',
-      '@testing-library/react installation',
       'msw mock service worker setup tutorial',
       'add test coverage to nodejs project',
       'vitest coverage v8 setup',
-      'e2e testing configuration automation',
     ],
   },
   'modules/ci-cd': {
-    title: 'Set Up GitHub Actions & GitLab CI Pipeline Automatically – DevFlow',
+    title: 'GitHub Actions and GitLab CI — DevFlow Modules',
     description:
-      'Generate GitHub Actions CI/CD workflows, GitLab CI pipelines, and Renovate/Dependabot configs for Node.js projects. Complete lint → typecheck → test → build pipeline in one command.',
+      'Generate GitHub Actions workflows, GitLab CI pipelines and Dependabot or Renovate configuration for Node.js projects.',
     keywords: [
       'how to add github actions',
       'how to add github actions to nodejs project',
       'github actions workflow yml generator',
       'github actions lint test build nodejs',
-      'github actions pnpm setup 2026',
+      'github actions pnpm setup',
       'github actions bun setup',
       'gitlab ci yml nodejs pipeline',
       'add dependabot to repository',
       'renovate bot vs dependabot comparison',
       'ci cd pipeline generator nodejs',
-      'github actions cancel in progress runs',
-      'github actions matrix node version',
-      'automate ci cd javascript project',
     ],
   },
   'modules/docker': {
-    title: 'Add Dockerfile & docker-compose to Node.js Project – DevFlow',
+    title: 'Dockerfile and docker-compose — DevFlow Modules',
     description:
-      'Generate a production-ready multi-stage Dockerfile and docker-compose.yml for any Node.js/TypeScript application. Adapts to your package manager (npm, pnpm, yarn, bun) automatically.',
+      'Generate a multi-stage Dockerfile, docker-compose.yml and .dockerignore for a Node.js application, adapted to your package manager.',
     keywords: [
       'how to containerize nodejs app',
       'nodejs dockerfile multi-stage build',
-      'production dockerfile nodejs 2026',
       'next.js dockerfile best practice',
       'nestjs dockerfile generator',
       'pnpm dockerfile production',
       'docker-compose dev environment nodejs',
       'add .dockerignore to project',
-      'docker nodejs app small image',
-      'multi-stage docker build node alpine',
       'generate dockerfile automatically',
     ],
   },
   'modules/releases': {
-    title: 'Automate Releases with release-it & Changesets – DevFlow',
+    title: 'release-it, Changesets, semantic-release — DevFlow',
     description:
-      'Automate versioning, changelog generation, and npm publishing with release-it or Changesets. DevFlow configures everything for single packages and monorepos.',
+      'Automate versioning, changelog generation and npm publishing with release-it, Changesets or semantic-release.',
     keywords: [
       'how to automate npm releases',
       'release-it setup configuration',
@@ -265,31 +248,27 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'conventional changelog setup',
       'npm publish automation workflow',
       'release-it vs changesets comparison',
-      'automated git tagging nodejs',
-      'version bump script nodejs',
     ],
   },
   'modules/security': {
-    title: 'Add Security Scanning to Node.js – npm audit, Gitleaks, Trivy',
+    title: 'npm audit, Gitleaks and Trivy — DevFlow Modules',
     description:
-      'Automatically add npm audit, Gitleaks secret detection, Trivy vulnerability scanning, and OSV-Scanner to your project and GitHub Actions CI pipeline with one command.',
+      'Add npm audit, Gitleaks secret detection, Trivy vulnerability scanning and OSV-Scanner to your project and its GitHub Actions pipeline with one command.',
     keywords: [
       'how to add security scanning to nodejs project',
       'npm audit github actions integration',
       'prevent committing api keys secrets',
       'gitleaks git secret detection setup',
       'trivy vulnerability scanner nodejs',
-      'osv-scanner google dependency check',
+      'osv-scanner dependency check',
       'detect secrets in code repository',
-      'nodejs dependency vulnerability scan',
       'add security step to ci pipeline',
-      'protect against leaked credentials git',
     ],
   },
   'modules/monorepo': {
-    title: 'Set Up Turborepo, Nx & pnpm Workspaces Automatically – DevFlow',
+    title: 'Turborepo, Nx and pnpm Workspaces — DevFlow',
     description:
-      'Configure Turborepo, Nx, or pnpm/yarn workspaces for your monorepo with one command. Includes shared TypeScript config, build caching, and task pipeline configuration.',
+      'Configure Turborepo, Nx or pnpm and yarn workspaces for a monorepo, with a shared tsconfig.base.json and workspace scripts.',
     keywords: [
       'how to set up turborepo monorepo',
       'turborepo turbo.json configuration',
@@ -299,14 +278,12 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'monorepo shared tsconfig.base.json',
       'turborepo vs nx comparison',
       'incremental build caching monorepo',
-      'monorepo affected commands ci',
-      'scaffold nodejs monorepo project',
     ],
   },
   'modules/dx': {
-    title: 'Dev Environment Setup – .nvmrc, .env.example, VSCode Config – DevFlow',
+    title: '.nvmrc, .env.example and VSCode — DevFlow',
     description:
-      'Automate dev environment configuration: pin Node.js version with .nvmrc, generate .env.example, configure VSCode settings and extensions, and add Dev Container support.',
+      'Pin the Node.js version with .nvmrc, generate .env.example, configure VSCode settings and add Dev Container support.',
     keywords: [
       'how to pin nodejs version with nvmrc',
       'nvmrc vs volta node version manager',
@@ -314,31 +291,27 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
       'vscode settings.json project configuration',
       'vscode extensions.json recommended',
       'devcontainer setup tutorial',
-      'dev container vs docker compose',
-      'shared editor config team project',
-      'fnm nvm node version pinning',
       'dotenv example file generator',
     ],
   },
   'modules/docs': {
-    title: 'Auto-Generate README, Contributing Guide & License – DevFlow',
+    title: 'README, CONTRIBUTING and LICENSE — DevFlow',
     description:
-      'Automatically generate README.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, and LICENSE files tailored to your project structure.',
+      'Generate README.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md and LICENSE files for your project, with MIT, Apache-2.0 or a proprietary placeholder.',
     keywords: [
       'auto generate readme.md nodejs project',
       'readme template generator cli',
       'contributing.md template generator',
       'code of conduct template open source',
       'add license to github repository',
-      'professional project readme badges',
       'open source project documentation setup',
       'security.md template nodejs',
     ],
   },
   'architecture/overview': {
-    title: 'DevFlow Architecture Overview – How It Works Internally',
+    title: 'DevFlow Architecture Overview — How It Works',
     description:
-      "Deep dive into DevFlow's architecture: context detection pipeline, module system design, executor, and the plugin interface.",
+      "A deep dive into DevFlow's architecture: the context detection pipeline, the module system design, the executor and the plugin interface.",
     keywords: [
       'how devflow works internally',
       'devflow cli architecture',
@@ -349,22 +322,21 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
     ],
   },
   'architecture/context-detection': {
-    title: 'DevFlow Context Detection – Stack & Package Manager Auto-Detection',
+    title: 'DevFlow Context Detection — Stack Detection',
     description:
-      'How DevFlow automatically detects your stack (React, Next.js, Vue, NestJS), package manager, TypeScript configuration, and monorepo setup.',
+      'How DevFlow detects your stack, package manager, TypeScript configuration and monorepo layout, and which signal wins when two of them disagree.',
     keywords: [
       'how devflow detects project stack',
       'detect react nextjs vue nestjs from dependencies',
       'detect package manager from lock file',
-      'projectcontext detection cli',
       'detect typescript from tsconfig.json',
       'detect monorepo nx turborepo automatically',
     ],
   },
   'architecture/executor': {
-    title: 'DevFlow Executor – Plan Execution Engine',
+    title: 'DevFlow Executor — The Plan Execution Engine',
     description:
-      "How DevFlow's executor processes the collected action plan and applies file writes, package installations, and script additions.",
+      "How the DevFlow executor applies the action plan — file writes, package installations and script additions — and how dry-run intercepts them.",
     keywords: [
       'devflow executor engine',
       'cli action plan execution',
@@ -374,9 +346,9 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
     ],
   },
   'architecture/module-interface': {
-    title: 'DevFlow Module Interface – Create Custom Modules',
+    title: 'DevFlow Module Interface — Custom Modules',
     description:
-      "Technical reference for DevFlow's module interface. How modules detect existing config, build action plans, and integrate with the interactive wizard.",
+      "A technical reference for the DevFlow module interface: how modules detect existing configuration, build action plans and join the wizard.",
     keywords: [
       'devflow module interface api',
       'devflowmodule typescript interface',
@@ -387,9 +359,9 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
     ],
   },
   'guides/contributing': {
-    title: 'Contributing to DevFlow – Development & PR Guide',
+    title: 'Contributing to DevFlow — Development and PRs',
     description:
-      'How to contribute to DevFlow: fork the repo, set up the dev environment, write or fix modules, and submit a pull request.',
+      'How to contribute to DevFlow: fork the repository, set up the development environment, write or fix a module, and submit a pull request.',
     keywords: [
       'how to contribute to devflow',
       'devflow open source contribution',
@@ -400,9 +372,9 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
     ],
   },
   'guides/creating-modules': {
-    title: 'Creating Custom DevFlow Modules – Step-by-Step Guide',
+    title: 'Creating Custom DevFlow Modules — Step-by-Step',
     description:
-      'Learning how to create your own DevFlow modules from scratch: detection logic, file generation, options schema, and wizard integration.',
+      'Learn how to create your own DevFlow module from scratch: detection logic, file generation, the options schema and the wizard integration.',
     keywords: [
       'how to create devflow module',
       'build custom devflow plugin step by step',
@@ -414,47 +386,41 @@ const PAGE_SEO_MAP: Record<string, PageSEO> = {
   },
 };
 
+const REDIRECTS: Record<string, string> = {
+  'cli-reference': '/cli',
+};
+
 function getSlugKey(slug?: string[]): string {
   if (!slug || slug.length === 0) return '';
   return slug.join('/');
 }
 
 function buildBreadcrumbs(slug?: string[]) {
-  const items = [
+  const items: { name: string; url: string }[] = [
     {
-      '@type': 'ListItem',
-      position: 1,
       name: 'Home',
-      item: BASE_URL,
+      url: BASE_URL,
     },
     {
-      '@type': 'ListItem',
-      position: 2,
       name: 'Docs',
-      item: `${BASE_URL}/docs`,
+      url: `${BASE_URL}/docs`,
     },
   ];
 
   if (slug && slug.length > 0) {
     let path = `${BASE_URL}/docs`;
-    slug.forEach((segment, i) => {
+    slug.forEach((segment) => {
       path += `/${segment}`;
       items.push({
-        '@type': 'ListItem',
-        position: i + 3,
         name: segment
           .replace(/-/g, ' ')
           .replace(/\b\w/g, (c) => c.toUpperCase()),
-        item: path,
+        url: path,
       });
     });
   }
 
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items,
-  };
+  return breadcrumbSchema(items);
 }
 
 export default async function Page(props: {
@@ -464,15 +430,31 @@ export default async function Page(props: {
   const page = source.getPage(params.slug);
   if (!page) notFound();
 
+  const slugKey = getSlugKey(params.slug);
+  const redirect = REDIRECTS[slugKey];
+  if (redirect) permanentRedirect(redirect);
+
   const MDX = page.data.body;
-  const breadcrumbJsonLd = buildBreadcrumbs(params.slug);
+  const path = params.slug?.length ? `/docs/${params.slug.join('/')}` : '/docs';
+
+  const jsonLd: unknown[] = [
+    buildBreadcrumbs(params.slug),
+    techArticleSchema({
+      headline: page.data.title,
+      description: page.data.description ?? '',
+      url: `${BASE_URL}${path}`,
+      section: 'Documentation',
+    }),
+  ];
+
+  const faqs = faqsFor(path);
+  if (faqs.length > 0) jsonLd.push(faqSchema(faqs));
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      {jsonLd.map((data, index) => (
+        <JsonLd key={index} data={data} />
+      ))}
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
@@ -498,40 +480,26 @@ export async function generateMetadata(props: {
   if (!page) notFound();
 
   const slugKey = getSlugKey(params.slug);
+  const redirect = REDIRECTS[slugKey];
+  if (redirect) {
+    return buildPageMetadata({
+      title: 'DevFlow CLI Reference',
+      description: 'The DevFlow CLI reference has moved to the dedicated CLI page.',
+      path: '/cli',
+    });
+  }
+
   const seo = PAGE_SEO_MAP[slugKey];
+  const path = params.slug?.length ? `/docs/${params.slug.join('/')}` : '/docs';
 
   const title = seo?.title ?? page.data.title;
   const description = seo?.description ?? page.data.description ?? '';
-  const keywords = seo?.keywords ?? [];
-  const canonicalUrl = `${BASE_URL}/docs${params.slug ? `/${params.slug.join('/')}` : ''}`;
 
-  return {
-    title,
+  return buildPageMetadata({
+    title: `${title} | DevFlow CLI`,
     description,
-    keywords,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      type: 'article',
-      url: canonicalUrl,
-      title,
-      description,
-      siteName: 'DevFlow',
-      images: [
-        {
-          url: `${BASE_URL}/og-image.webp`,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: [`${BASE_URL}/og-image.webp`],
-    },
-  };
+    path,
+    keywords: seo?.keywords ?? keywordsFor(path),
+    type: 'article',
+  });
 }

@@ -1,0 +1,159 @@
+---
+title: Docker Module
+description: "DevFlow generates a multi-stage Dockerfile on node:20-alpine with a non-root user, plus docker-compose.yml and a .dockerignore."
+---
+
+## The problem
+
+A single-stage Dockerfile installs every dev dependency, copies the whole source tree into the image and runs as root. The result is a 900 MB image that contains your test framework, your linter and a shell, on a 1.44 MB base image that could hold the application.
+
+The second problem is the build context. Without a `.dockerignore`, `docker build` uploads `node_modules`, `.git` and `.env` to the daemon on every single build.
+
+## The command
+
+```bash
+npx create-devflow --only dockerfile
+```
+
+All three container files together:
+
+```bash
+npx create-devflow --docker
+```
+
+## Generated files
+
+### `Dockerfile`
+
+```dockerfile
+# ── Build stage ──────────────────────────────────────
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm build
+
+# ── Production stage ─────────────────────────────────
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser  --system --uid 1001 appuser
+
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --prod
+
+COPY --from=builder /app/dist ./dist
+
+USER appuser
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+The install command, the lock file name and the build command follow the detected package manager. For npm the builder runs `npm ci` and the runtime stage runs `npm ci --omit=dev`.
+
+### `docker-compose.yml`
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+
+  # Uncomment to add a database
+  # db:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_USER: app
+  #     POSTGRES_PASSWORD: secret
+  #     POSTGRES_DB: app
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+
+# volumes:
+#   db-data:
+```
+
+### `.dockerignore`
+
+```
+node_modules
+dist
+build
+.git
+.gitignore
+.env
+.env.*
+*.md
+*.log
+coverage
+.vscode
+.idea
+.husky
+.changeset
+e2e
+cypress
+tests
+__tests__
+Dockerfile
+docker-compose*.yml
+.dockerignore
+```
+
+## Packages installed
+
+None. The Dockerfile does not add a dependency to your project.
+
+## Scripts added
+
+None.
+
+## Manual setup versus DevFlow
+
+The manual version is a Dockerfile you maintain by hand across every service in the organisation. DevFlow generates the same structure every time, with the package-manager-specific parts — the lock file name, the install command, the production install flag — filled in for you.
+
+## Limits
+
+- **The runtime stage copies `dist/`.** Your project needs a build step that emits to `dist/`. If it emits to `build/` or `.next/`, change the `COPY` line.
+- **No `HEALTHCHECK` instruction.** The probe depends on your application, so DevFlow does not guess one. The [NestJS Docker guide](/guides/nestjs-docker) shows the snippet.
+- **No `docker-compose` development service.** The generated compose file builds the production image. For a hot-reload development container, write it yourself.
+- **The image runs as `appuser` (uid 1001).** If your application writes to the filesystem, that directory must be writable by uid 1001.
+- **Node.js 20 on Alpine.** The base image is `node:20-alpine`. Change it if you need a different version or a Debian-based image for native dependencies.
+
+## FAQ
+
+### Does the generated Dockerfile include a health check?
+
+No. DevFlow generates the multi-stage build, the non-root user and the production-only dependency install, but it does not add a `HEALTHCHECK` instruction. The NestJS guide shows how to add one.
+
+### Why does the runtime stage copy `dist/`?
+
+The production stage contains only production dependencies and the compiled output. Your build step has to emit to `dist/` for the generated `COPY` line to work.
+
+### Does it work with pnpm, yarn and bun?
+
+Yes. The lock file name and the install commands are generated for the detected package manager. pnpm and yarn use `corepack enable` first.
+
+### How do I rebuild after changing a file?
+
+```bash
+docker compose up --build
+```
+
+## Related
+
+- [Docker Setup for NestJS](/guides/nestjs-docker) — health checks, image size and CI
+- [Dockerfile and docker-compose reference](/docs/modules/docker)
+- [CLI reference](/cli)

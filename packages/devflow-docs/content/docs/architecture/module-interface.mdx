@@ -1,7 +1,6 @@
 ---
 title: Module Interface
-description: "Technical reference for the DevFlowModule interface — learn how every module detects existing configs, generates an action plan, and integrates with the wizard and executor."
-
+description: "A technical reference for the DevFlow module interface: how modules detect existing configuration, build action plans and join the wizard."
 ---
 
 ## Interface Definition
@@ -79,7 +78,7 @@ Modules return an array of `ModuleAction` — a discriminated union:
 ```typescript
 {
   type: "create-file",
-  path: "eslint.config.js",
+  path: "eslint.config.mjs",
   content: "export default [...];",
   skipIfExists: true
 }

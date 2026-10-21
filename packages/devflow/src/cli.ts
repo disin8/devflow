@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import chalk from "chalk";
 import type { CIProvider, PackageManager } from "./core/types.js";
+import { CI_PROVIDER_MODULES, isCiProvider } from "./core/ci-providers.js";
 import { setDryRun, setVerbose, log } from "./core/logger.js";
 import { detectProject } from "./core/context.js";
 import { resolveModules, MODULE_MAP } from "./modules/registry.js";
@@ -12,8 +12,9 @@ import {
   printSummary,
 } from "./core/executor.js";
 import { runWizard } from "./wizard/index.js";
+import { readVersion } from "./version.js";
 
-const VERSION = "1.0.0";
+const VERSION = readVersion();
 
 function createCLI() {
   const program = new Command();
@@ -29,7 +30,10 @@ function createCLI() {
     .option("--skip-install", "Skip npm install (generate files only)")
     .option("--pm <manager>", "Force package manager (npm|pnpm|yarn|bun)")
     .option("--ci <provider>", "CI provider (github|gitlab|both)")
-    .option("--scope <path>", "Monorepo scope")
+    .option(
+      "--scope <pattern>",
+      "Workspace glob pattern for monorepo configs (e.g. \"packages/*\")",
+    )
     .option("--verbose", "Verbose output")
     // Direct module shortcuts
     .option("--husky", "Setup Husky hooks")
@@ -60,7 +64,9 @@ function createCLI() {
       opts.release ||
       opts.docker ||
       opts.docs ||
-      opts.security;
+      opts.security ||
+      opts.ci ||
+      opts.scope;
 
     if (!hasActionFlag) {
       await runWizard({
@@ -74,6 +80,10 @@ function createCLI() {
     }
 
     const ctx = detectProject(root, forcePm);
+    if (opts.scope) {
+      ctx.workspacePatterns = [opts.scope];
+      if (ctx.repoType !== "monorepo") ctx.repoType = "monorepo";
+    }
     let moduleIds: string[] = [];
 
     if (opts.all) {
@@ -90,6 +100,16 @@ function createCLI() {
       if (opts.husky) moduleIds.push("husky", "lint-staged", "commitlint");
       if (opts.lint) moduleIds.push("eslint", "prettier", "editorconfig");
       if (opts.test) moduleIds.push("vitest");
+      if (opts.ci) {
+        const provider = opts.ci as string;
+        if (!isCiProvider(provider)) {
+          log.error(
+            `Unknown CI provider: "${opts.ci}". Options: github, gitlab, both`,
+          );
+          process.exit(1);
+        }
+        moduleIds.push(...CI_PROVIDER_MODULES[provider]);
+      }
       if (opts.release) {
         const tool = opts.release as string;
         if (MODULE_MAP.has(tool)) {

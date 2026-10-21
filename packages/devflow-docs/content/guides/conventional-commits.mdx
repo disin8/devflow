@@ -1,0 +1,177 @@
+---
+title: Conventional Commits with Commitlint and Husky
+description: "Enforce the Conventional Commits format on every commit, wire Commitlint to a Husky commit-msg hook, validate it in CI, and turn the history into a changelog."
+---
+
+## The problem
+
+`feat: add login` is a convention. A convention that nothing enforces is a suggestion, and the history fills with `fixed stuff` and `WIP` anyway.
+
+Enforcing it needs three pieces that have to line up: the Commitlint configuration that defines the rules, the Husky `commit-msg` hook that runs Commitlint on every commit, and a CI check that catches the commits someone made with `--no-verify`.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `commitlint.config.mjs` | the rules a commit message has to satisfy |
+| `.husky/commit-msg` | runs Commitlint on every commit |
+| `.husky/pre-commit` | runs lint-staged on staged files |
+
+## Step 1 — apply the modules
+
+```bash
+npx create-devflow --husky
+```
+
+That applies Husky, lint-staged and Commitlint together. To apply only the commit validation:
+
+```bash
+npx create-devflow --only husky --only commitlint
+```
+
+## Step 2 — check the generated configuration
+
+```javascript
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [
+      2,
+      'always',
+      [
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'build',
+        'ci',
+        'chore',
+        'revert',
+      ],
+    ],
+    'subject-case': [2, 'never', ['start-case', 'pascal-case', 'upper-case']],
+    'header-max-length': [2, 'always', 100],
+  },
+};
+```
+
+Three rules on top of the Conventional Commits preset:
+
+| Rule | Effect |
+| --- | --- |
+| `type-enum` | only the eleven listed types are accepted |
+| `subject-case` | the subject may not start with a capital, nor be PascalCase or UPPERCASE |
+| `header-max-length` | the first line may not exceed 100 characters |
+
+## Step 3 — check the hook
+
+`.husky/commit-msg`:
+
+```bash
+npx --no -- commitlint --edit "$1"
+```
+
+`npx --no --` is the important part. It tells npx to resolve `commitlint` from the local `node_modules` and to fail if it is not installed, instead of downloading it from the registry on every commit.
+
+## Step 4 — make a commit
+
+```bash
+git commit -m "feat(auth): add password reset flow"
+```
+
+A message that fails the rules:
+
+```text
+⧗   input: fix: Add Password reset
+⧗   input: fix: add password reset
+✖   subject may not start with a capital letter [subject-case]
+✖   type may not be empty [type-empty]
+```
+
+## Step 5 — validate it in CI too
+
+Hooks can be skipped with `git commit --no-verify`, and they do not run for pull requests from forks. Add a check to the workflow:
+
+```yaml
+      - name: Validate commit messages
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.sha }} --verbose
+```
+
+`--from` and `--to` limit the check to the commits in the pull request, so the whole history is not re-validated on every push.
+
+## Step 6 — turn the history into a changelog
+
+The `conventional-changelog` module installs the CLI and adds a script:
+
+```bash
+npx create-devflow --only conventional-changelog
+```
+
+```bash
+npm run changelog
+```
+
+It reads the git history and writes `CHANGELOG.md` in the Conventional Commits format. If you would rather have the changelog generated as part of a release, the `changesets` module does that instead — it is the monorepo-friendly option.
+
+## The full commit format
+
+```text
+feat(auth): add password reset flow
+
+The reset token is generated with a cryptographically secure random
+source and expires after 15 minutes.
+
+BREAKING CHANGE: the reset endpoint now returns 410 instead of 404 for
+an expired token.
+```
+
+- The **type** is the prefix in parentheses after the colon.
+- The **scope** is optional and names the area of the codebase.
+- The **subject** is the imperative summary.
+- The **body** explains why, and is only required for a breaking change.
+
+## Manual setup versus DevFlow
+
+The manual version is `npm i -D @commitlint/cli @commitlint/config-conventional`, a `commitlint.config.js` with one line, and then editing `.husky/commit-msg` by hand. The part that is easy to get wrong is the `npx --no --` prefix — without it, every commit that triggers the hook can trigger an npm registry request.
+
+DevFlow writes the configuration, the strict preset and the hook in one pass.
+
+## Limits
+
+- **The strict type list is fixed.** Community types such as `wip` or `hotfix` are rejected until you add them to `type-enum`.
+- **`subject-case` rejects the whole subject**, not just the first character. `feat: add login` passes, `feat: Add login` does not.
+- **The hook has to be installed.** The `prepare` script runs on every install, so a fresh clone activates the hooks. A clone with `--no-optional` or a CI container that skips install scripts does not.
+- **No `body-max-line-length` rule** is added.
+- **Commitlint is not a semantic-release driver.** For automated versioning, use the `semantic-release` or `changesets` module.
+
+## FAQ
+
+### Which commit types does the strict configuration allow?
+
+`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` and `revert`.
+
+### Can I use Commitlint without Husky?
+
+Yes. Delete `.husky/commit-msg` and add a Commitlint step to your CI pipeline instead, so pull requests are validated even when a developer commits locally without hooks.
+
+### Does Commitlint work with a monorepo?
+
+Yes. The configuration file sits at the repository root, which is where the hook runs from.
+
+### How do I add a custom commit type?
+
+Add it to the `type-enum` array in `commitlint.config.mjs`:
+
+```javascript
+'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert', 'hotfix']],
+```
+
+## Related
+
+- [Commitlint module](/modules/commitlint) — what the module generates
+- [Husky module](/modules/husky) — the hook that runs Commitlint
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)
+- [Git and Commits reference](/docs/modules/git)

@@ -1,22 +1,26 @@
 ---
 title: Installation
-description: "Install DevFlow with npx create-devflow (no global install needed), or add it globally with npm/pnpm/yarn/bun. Works with any Node.js >= 18 project."
+description: "Install DevFlow CLI with npx create-devflow (no global install needed), or add it globally with npm/pnpm/yarn/bun. Works with any Node.js >= 18 project."
 ---
 
 ## Requirements
 
-- **Node.js** >= 18.0.0
-- A JavaScript/TypeScript project with a `package.json` (or DevFlow will create one)
+- **Node.js** >= 18.0.0 — 18, 20 and 22 are supported and tested
+- A JavaScript or TypeScript project with a `package.json` (DevFlow reads it to detect the package manager and the stack)
+- macOS, Linux, or Windows through WSL2
+- A Git repository, if you want the Husky hooks to be active
+
+DevFlow has no native binary dependencies, so there is nothing to compile and no platform-specific download.
 
 ## Using npx (Recommended)
 
-No installation required — run directly:
+No installation required — run it directly:
 
 ```bash
 npx create-devflow
 ```
 
-This always fetches the latest version.
+This always fetches the latest published version.
 
 ## Global Installation
 
@@ -50,6 +54,8 @@ Add a script to `package.json`:
 }
 ```
 
+This is the right choice in a repository that generates its own workflow, because the version is pinned in the lock file and every machine runs the same one.
+
 ## Verify Installation
 
 ```bash
@@ -57,19 +63,38 @@ devflow --version
 devflow --help
 ```
 
+`--version` prints the published version of the package you are running — it reads it from the installed `package.json`, so it always matches what npm gave you.
+
 ## Package Managers
 
-DevFlow works with all major package managers:
+DevFlow works with all major package managers. The package manager is detected from the lock file, and every generated file — the CI workflow, the Dockerfile, the install commands — is written for the detected manager.
 
-| Package Manager | Install Command           |
-| --------------- | ------------------------- |
-| **npm**         | `npx create-devflow`      |
-| **pnpm**        | `pnpm dlx create-devflow` |
-| **yarn**        | `yarn dlx create-devflow` |
-| **bun**         | `bunx create-devflow`     |
+| Package manager | Run DevFlow with | Lock file used in the generated files |
+| --------------- | ---------------- | ------------------------------------- |
+| **npm**         | `npx create-devflow` | `package-lock.json` |
+| **pnpm**        | `pnpm dlx create-devflow` | `pnpm-lock.yaml` |
+| **yarn**        | `yarn dlx create-devflow` | `yarn.lock` |
+| **bun**         | `bunx create-devflow` | `bun.lock` |
 
-DevFlow auto-detects your package manager from lock files, but you can override it:
+Override the detection when you need to:
 
 ```bash
 devflow --pm pnpm
 ```
+
+## Package managers in the generated configuration
+
+| Package manager | Install command in CI | Script prefix | Notes |
+| --------------- | --------------------- | ------------- | ----- |
+| npm | `npm ci` | `npm run` | Uses the frozen lock file, so the CI build fails if the lock file is out of date. |
+| pnpm | `pnpm install --frozen-lockfile` | `pnpm run` | Corepack is enabled first, so the pnpm version comes from the `packageManager` field. |
+| yarn | `yarn install --frozen-lockfile` | `yarn run` | Corepack is enabled first. |
+| bun | `bun install --frozen-lockfile` | `bun run` | Bun is installed by `oven-sh/setup-bun`; there is no `node_modules` cache to restore. |
+
+The `run` prefix is always explicit, because `bun build` is Bun's bundler rather than the `build` script in your `package.json`.
+
+## Next steps
+
+- [Quick start](/docs/quick-start) — run the wizard and generate the workflow
+- [CLI reference](/cli) — every flag, with examples
+- [Dry run mode](/docs/dry-run) — preview every change before anything is written

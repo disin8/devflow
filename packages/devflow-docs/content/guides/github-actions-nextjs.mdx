@@ -1,0 +1,195 @@
+---
+title: GitHub Actions CI/CD for Next.js
+description: "A GitHub Actions pipeline for a Next.js application that lints, type-checks, tests and builds on every pull request."
+---
+
+## The problem
+
+Most Next.js repositories have one of two CI setups: no CI at all, or a workflow copied from a blog post that runs `npm run build` and nothing else. The second one is worse than the first, because it gives you a green check that means almost nothing.
+
+A pipeline worth having answers four questions on every pull request: does it type-check, does it lint, do the tests pass, and does it build? And it has to answer them in an order where an early failure is cheap.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `.github/workflows/ci.yml` | the pull request pipeline |
+| `eslint.config.mjs` | the lint step needs a config |
+| `vitest.config.ts` | the test step needs a config |
+| `tsconfig.json` | the type-check step needs one |
+
+## Step 1 — apply the modules the pipeline depends on
+
+The generated workflow calls `lint`, `typecheck`, `test` and `build`. Those scripts come from other modules, so apply them first:
+
+```bash
+npx create-devflow --lint --test --ci github
+```
+
+If your project already has ESLint and Vitest configured, only the CI module is needed:
+
+```bash
+npx create-devflow --ci github
+```
+
+## Step 2 — check the generated workflow
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+        continue-on-error: true
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+```
+
+Five things in this file are worth understanding:
+
+1. **`concurrency` with `cancel-in-progress: true`.** Push a second commit while the pipeline is running and the first run is cancelled. Without it you pay for every push.
+2. **`cache: 'npm'`.** `actions/setup-node` caches the package manager downloads and keys the cache on the lock file. The cache value follows your detected package manager — `pnpm` for pnpm projects, `yarn` for yarn projects.
+3. **`npm ci`, not `npm install`.** `npm ci` installs exactly what the lock file says and fails when the lock file is out of date, instead of silently updating it.
+4. **`continue-on-error` on the type check.** A type error is reported in the log without blocking the build. Remove the line to make it blocking.
+5. **The order.** Lint first, because it is the fastest check. Build last, because it is the slowest.
+
+## Step 3 — widen the Node.js matrix
+
+The generated matrix contains one version. If you support more, list them:
+
+```yaml
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+```
+
+## Step 4 — add the format check
+
+The generated workflow does not include a formatting check, because the Prettier module is optional. If you use it, add a step after the lint step:
+
+```yaml
+      - name: Format check
+        run: npm run format:check
+```
+
+## Step 5 — where the deploy step belongs
+
+The generated workflow does not deploy anything, and that is deliberate. Deployment depends on where the application runs:
+
+| Hosting | Where the deploy happens |
+| --- | --- |
+| Vercel | Vercel's own Git integration. Connect the repository in the Vercel project settings; the Vercel build runs on every push. The GitHub Actions pipeline stays responsible for lint, type-check, test and build. |
+| A container registry | Add a build-and-push job to the workflow. The [Docker guide](/guides/nestjs-docker) shows the job. |
+| A static host | Add a deploy step with the provider's own action. |
+
+A common mistake is deploying from the pull request pipeline. It means a fork can trigger a deployment. Keep the deployment on the `push` trigger, or in a separate workflow with an `environment` and required reviewers.
+
+## What the CI run looks like
+
+```text
+Run actions/checkout@v4
+  Removing /home/runner/work/my-app/my-app
+  /home/runner/work/my-app/my-app is at 8f3a1b2…
+
+Run actions/setup-node@v4
+  Found node version 20.11.1
+  Restored cache: pnpm-cache-8f3a1b2…
+
+Run pnpm install --frozen-lockfile
+  Lockfile is up to date, resolution step is skipped
+  Progress: resolved 412, reused 412, downloaded 0, added 412
+  Done in 4.2s
+
+Run pnpm lint
+  Done in 1.8s
+
+Run pnpm typecheck
+  Done in 2.4s
+
+Run pnpm test
+  Test Files  12 passed (12)
+       Tests  87 passed (87)
+      Duration  3.1s
+
+Run pnpm build
+  Route (app)                     Size
+  ┌ ○ /                            142 B
+  ├ ƒ /api/hello                   168 B
+  ○  (Static) prerendered as static content
+  ✓ Compiled successfully
+```
+
+## Manual setup versus DevFlow
+
+Copying a workflow means copying all of it: the trigger, the concurrency block, the cache configuration, the install command for your package manager, and the exact names of four scripts. Every part of that is a chance to be wrong, and the failure mode — a workflow that fails on a missing script — is a red build on your first push.
+
+DevFlow generates the workflow from the same package-manager detection that the other modules use, so the install command, the cache key and the run prefix always agree with your lock file.
+
+## Limits
+
+- **No deploy job.** See step 5.
+- **The type-check step is non-blocking** by default.
+- **One Node.js version** in the matrix.
+- **No `next build` caching.** Next.js caches its own build output in `.next/cache`; the workflow does not persist it between runs, so every run starts cold. See the [Turborepo CI guide](/guides/turborepo-ci) for the caching pattern.
+- **No environment protection rules.** Those live in the GitHub repository settings, not in the workflow file.
+
+## FAQ
+
+### How do I add a deploy step for Vercel?
+
+You do not. Vercel builds Next.js itself when the repository is connected to a Vercel project, so the GitHub Actions workflow does not need a deploy job. Keep the workflow for lint, type-check, test and build and let Vercel deploy from its own Git integration.
+
+### Why does the build step need the lint and type-check steps to pass?
+
+They do not have to. The type-check step is marked `continue-on-error`, so a type error is visible in the log without blocking the pipeline. Remove the `continue-on-error` line to make type errors fail the build.
+
+### Does the workflow cache dependencies?
+
+Yes. `actions/setup-node` caches the package manager downloads and keys the cache on the lock file, so a second run does not download the dependency tree again.
+
+### How do I run the pipeline on a branch other than main?
+
+The generated workflow triggers on `main` and `master`. Edit the `branches` list in the `on:` block to add a branch.
+
+## Related
+
+- [GitHub Actions module](/modules/github-actions) — what the CI module generates
+- [Vitest setup for React and TypeScript](/guides/vitest-react-typescript) — the test step
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky) — the lint step
+- [Turborepo CI/CD with GitHub Actions](/guides/turborepo-ci) — caching and monorepo pipelines

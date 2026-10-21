@@ -1,0 +1,129 @@
+---
+title: GitHub Actions Module
+description: "DevFlow generates a .github/workflows/ci.yml that installs your detected package manager, caches dependencies and runs lint, type-check, test and build."
+---
+
+## The problem
+
+The first CI workflow in a repository is always copied from somewhere, and it is usually copied from a project with a different package manager, a different test runner and a different build command. Then it fails on the first run, and the fix is to edit three YAML files that nobody understands.
+
+The second problem is dependency caching. Without it, every run downloads the entire dependency tree, which turns a two-minute pipeline into a six-minute one.
+
+## The command
+
+```bash
+npx create-devflow --ci github
+```
+
+Or apply only this module:
+
+```bash
+npx create-devflow --only github-actions
+```
+
+Both GitHub and GitLab are supported: `--ci gitlab` and `--ci both`.
+
+## Generated files
+
+### `.github/workflows/ci.yml` — pnpm project
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+        continue-on-error: true
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+```
+
+For npm projects the pnpm setup step is dropped, the install command becomes `npm ci`, the cache key becomes `npm` and the run prefix becomes `npm run`. For yarn and bun the workflow installs that package manager and uses its frozen lock file.
+
+## Packages installed
+
+None. The workflow uses the scripts that are already in your `package.json`.
+
+This matters: if you apply the CI module on its own, the `lint`, `typecheck`, `test` and `build` steps will fail because those scripts do not exist yet. Apply the matching modules first, or use `--all`.
+
+## Scripts added
+
+None.
+
+## Manual setup versus DevFlow
+
+The manual version is a YAML file pasted from a template, then edited until every step name matches your scripts. DevFlow generates the workflow from the package manager it detected, and the step names come from the same module definitions that add the scripts — so the two always agree.
+
+## Limits
+
+- **No deploy job.** The workflow runs lint, type-check, test and build. Deployment depends on your hosting provider, so DevFlow does not guess. The [Next.js guide](/guides/github-actions-nextjs) covers the Vercel case.
+- **The type-check step uses `continue-on-error`.** A type error is reported in the logs but does not fail the pipeline. Remove that line to make type errors blocking.
+- **The Node.js matrix contains version 20 only.** Add `18` and `22` to the `node-version` array to test more versions.
+- **The workflow is not monorepo-aware.** It runs at the repository root and does not cache Turborepo or Nx task outputs. See the [Turborepo CI guide](/guides/turborepo-ci).
+- **The `typecheck` step fails if the script is missing.** The `continue-on-error` flag covers a failing type check, not a missing script — a missing script still exits non-zero. Use `continue-on-error` only after you have the script.
+
+## FAQ
+
+### Does the generated workflow deploy my application?
+
+No. It runs lint, type-check, test and build on pushes and pull requests against `main` and `master`. There is no deploy job, because the correct deploy step depends on where you host the application.
+
+### Why is the type-check step allowed to fail?
+
+So that a type error is visible in the log without blocking the entire pipeline. Remove the `continue-on-error` line if you want type errors to fail the build.
+
+### Which Node.js versions does it test?
+
+Version 20. The `node-version` matrix array is yours to extend.
+
+### How do I cache pnpm in GitHub Actions?
+
+You do not need to — `actions/setup-node` does it. The generated workflow sets `cache: 'pnpm'`, which makes the action key the cache on `pnpm-lock.yaml`.
+
+## Related
+
+- [GitHub Actions CI/CD for Next.js](/guides/github-actions-nextjs) — the full pipeline walkthrough
+- [Vitest module](/modules/vitest) — the test script the workflow runs
+- [Turborepo CI/CD with GitHub Actions and pnpm workspaces](/guides/turborepo-ci) — monorepo caching
+- [CI/CD reference](/docs/modules/ci-cd) — GitLab CI, Codecov, Dependabot and Renovate

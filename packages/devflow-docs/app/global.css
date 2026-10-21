@@ -2,33 +2,43 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
+/*
+ * One ramp, one accent.
+ *
+ * Every surface below is a step of the same cool-dark scale, so sections can
+ * alternate (page -> surface -> card) without changing hue. `--code` and
+ * `--code-dim` are separate from `--line` on purpose: line numbers and file
+ * paths are text and must stay readable, `--line` is a border colour.
+ */
 :root,
 html.dark {
-  --accent: #7dff86;
-  --accent-fg: #1b2e0e;
-  --foreground: #ffffff;
-  --muted: #b5bdc5;
-  --line: #212d31;
-  --card: #141e1f;
-  --page: #060e11;
-  --nav: #080f11;
-  --surface: #121212;
-  --code: #656864;
-  --editor: #0d1117;
-  --editor-bar: #161b22;
+  --accent: #4ade80;
+  --accent-fg: #05230f;
+  --foreground: #e8eef4;
+  --muted: #94a3b8;
+  --line: #1e2833;
+  --card: #121a22;
+  --page: #090f13;
+  --nav: #090f13;
+  --surface: #0d141a;
+  --code: #9fb0c0;
+  --code-dim: #6b8095;
+  --editor: #0b1117;
+  --editor-bar: #131c25;
 }
 
 html.light {
-  --accent: #16a34a;
+  --accent: #15803d;
   --accent-fg: #ffffff;
-  --foreground: #111827;
-  --muted: #6b7280;
-  --line: #e5e7eb;
-  --card: #f3f4f6;
+  --foreground: #0f172a;
+  --muted: #5b6b7c;
+  --line: #e3e8ef;
+  --card: #f7f9fb;
   --page: #ffffff;
   --nav: #ffffff;
-  --surface: #f9fafb;
-  --code: #9ca3af;
+  --surface: #f5f8fa;
+  --code: #475569;
+  --code-dim: #64748b;
   --editor: #0d1117;
   --editor-bar: #161b22;
 }
@@ -46,6 +56,7 @@ html.light {
   --color-nav: var(--nav);
   --color-surface: var(--surface);
   --color-code: var(--code);
+  --color-code-dim: var(--code-dim);
   --color-editor: var(--editor);
   --color-editor-bar: var(--editor-bar);
 }
@@ -57,24 +68,36 @@ html.light {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hero starts on --page so the navbar blends into it, and ends on --surface
+   so the proof bar below continues the same tone. */
 .bg-hero {
-  background: linear-gradient(#060f11 0%, #0b1a1d 57.28%, #0b1a1d 97.75%);
+  background: linear-gradient(
+    180deg,
+    var(--page) 0%,
+    var(--surface) 62%,
+    var(--surface) 100%
+  );
 }
 html.light .bg-hero {
-  background: #ffffff;
+  background: linear-gradient(
+    180deg,
+    var(--page) 0%,
+    #f7fbf8 62%,
+    var(--page) 100%
+  );
 }
 
 .bg-hero-glow {
   background: radial-gradient(
-    ellipse 60% 40% at 50% 100%,
-    rgba(74, 222, 128, 0.25) 0%,
+    ellipse 65% 48% at 50% 92%,
+    rgba(74, 222, 128, 0.22) 0%,
     transparent 70%
   );
 }
 html.light .bg-hero-glow {
   background: radial-gradient(
-    ellipse 60% 40% at 50% 100%,
-    rgba(22, 163, 74, 0.15) 0%,
+    ellipse 65% 48% at 50% 92%,
+    rgba(21, 128, 61, 0.08) 0%,
     transparent 70%
   );
 }
@@ -82,43 +105,36 @@ html.light .bg-hero-glow {
 .bg-cta {
   background: radial-gradient(
     58.548% 50% at 50% 39.8%,
-    #0c3328b3 0%,
-    #0b1a1d 100%
+    rgba(74, 222, 128, 0.13) 0%,
+    var(--card) 100%
   );
 }
 html.light .bg-cta {
   background: radial-gradient(
     58.548% 50% at 50% 39.8%,
-    rgba(134, 239, 172, 0.35) 0%,
-    #f0fdf4 100%
+    rgba(21, 128, 61, 0.07) 0%,
+    var(--card) 100%
   );
 }
 
 .bg-code-preview {
-  background: linear-gradient(180deg, rgb(8, 18, 23) 0%, rgb(11, 26, 29) 100%);
+  background: linear-gradient(180deg, var(--editor) 0%, #0e161d 100%);
 }
 html.light .bg-code-preview {
   background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
-  --accent: #16a34a;
-  --accent-fg: #ffffff;
-  --foreground: #111827;
-  --muted: #6b7280;
-  --code: #475569;
-  --line: #e6e6e6;
-  --card: #ffffff;
 }
 
 .bg-code-glow {
   background: radial-gradient(
-    ellipse 90% 50% at 50% 100%,
-    rgba(74, 222, 128, 0.32) 0%,
+    ellipse 65% 60% at 50% 50%,
+    rgba(74, 222, 128, 0.3) 0%,
     transparent 70%
   );
 }
 html.light .bg-code-glow {
   background: radial-gradient(
-    ellipse 90% 50% at 50% 100%,
-    rgba(74, 222, 128, 0.32) 0%,
+    ellipse 65% 60% at 50% 50%,
+    rgba(21, 128, 61, 0.12) 0%,
     transparent 70%
   );
 }
@@ -126,14 +142,14 @@ html.light .bg-code-glow {
 .bg-left-glow {
   background: radial-gradient(
     ellipse 60% 40% at 50% 100%,
-    rgba(74, 222, 128, 0.25) 0%,
+    rgba(74, 222, 128, 0.22) 0%,
     transparent 70%
   );
 }
 html.light .bg-left-glow {
   background: radial-gradient(
     ellipse 60% 40% at 50% 100%,
-    rgba(74, 222, 128, 0.25) 0%,
+    rgba(21, 128, 61, 0.08) 0%,
     transparent 70%
   );
 }
@@ -149,94 +165,25 @@ html.light .bg-left-glow {
   border-radius: 4px;
 }
 
-.glass {
-  background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-html.light .glass:not(.glass-light) {
-  background: rgba(13, 17, 23, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  --accent: #7dff86;
-  --code: #656864;
-  --muted: #b5bdc5;
-  --foreground: #ffffff;
-}
-
+/* Code window. One card, one border, one set of token overrides — the
+   previous variant mixed a rose border and a second accent scale into the
+   light theme, which is what made the light preview look washed out. */
 .glass-adaptive {
-  background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-html.light .glass-adaptive {
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid #e6eef6;
-  box-shadow:
-    0 6px 18px rgba(16, 24, 40, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --accent: #16a34a;
-  --accent-fg: #ffffff;
-  --foreground: #0f1724;
-  --muted: #6b7280;
-  --code: #334155;
-  --line: #d9cece;
-}
-
-.glass-adaptive {
-  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
-  border-radius: 12px;
+  background: linear-gradient(180deg, var(--editor) 0%, #0e161d 100%);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
   overflow: hidden;
 }
 
-.glass-adaptive .border-line {
-  border-color: var(--line) !important;
-}
-
-.glass-adaptive .text-code {
-  color: var(--code) !important;
-}
-.glass-adaptive .text-muted {
-  color: var(--muted) !important;
-}
-.glass-adaptive .text-foreground {
-  color: var(--foreground) !important;
-}
-
-.glass-adaptive .p-6 {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.02);
-}
-.glass-adaptive .w-8 {
-  color: color-mix(in srgb, var(--line) 80%, transparent);
-}
-.glass-adaptive .line-number {
-  color: var(--line);
-}
-
-.glass-light {
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid #e6eef6;
+html.light .glass-adaptive {
+  background: linear-gradient(180deg, #ffffff 0%, #f6f9fb 100%);
   box-shadow:
-    0 6px 18px rgba(16, 24, 40, 0.04),
+    0 10px 30px rgba(15, 23, 42, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-html.light .glass.glass-light {
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbfb 100%);
-  border: 1px solid #e6eef6;
-  --accent: #16a34a;
-  --accent-fg: #ffffff;
-  --foreground: #0f1724;
-  --muted: #6b7280;
-  --code: #334155;
-  --line: #e6eef6;
+.glass-adaptive .line-number {
+  color: var(--code-dim);
 }
 
 @keyframes marquee {

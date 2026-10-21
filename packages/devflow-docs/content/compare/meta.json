@@ -1,0 +1,11 @@
+{
+  "title": "Comparisons",
+  "description": "Honest comparisons between DevFlow CLI and the alternatives developers actually consider: manual setup, create-next-app, Nx and Turborepo.",
+  "pages": [
+    "index",
+    "manual-setup",
+    "create-next-app",
+    "nx",
+    "turborepo"
+  ]
+}

@@ -1,0 +1,188 @@
+---
+title: Vitest Setup for React and TypeScript
+description: "Set up Vitest with a jsdom environment, React Testing Library, V8 coverage, coverage thresholds and a coverage report on every pull request."
+---
+
+## The problem
+
+`npm i -D vitest` gives you a test runner, not a test setup. The first React component test fails with `document is not defined`, because the environment is still Node. The first coverage run fails with `Cannot find module '@vitest/coverage-v8'`, because a provider has to be installed separately.
+
+And the coverage report that finally appears counts your config files and test helpers as covered source, which is how a project ends up with a 94% number that means nothing.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `vitest.config.ts` | environment, plugin and coverage configuration |
+| `src/test/setup.ts` | the jest-dom matchers for Vitest |
+| `package.json` scripts | `test`, `test:watch`, `test:coverage` |
+
+## Step 1 — apply the modules
+
+```bash
+npx create-devflow --test
+```
+
+`--test` applies Vitest. In a React or Next.js project, add the Testing Library setup as well:
+
+```bash
+npx create-devflow --only vitest --only testing-library
+```
+
+## Step 2 — check the generated config
+
+```typescript
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
+});
+```
+
+- `plugins: [react()]` transforms JSX. Without it, a component test fails to parse.
+- `environment: 'jsdom'` gives you `document`, `window` and `HTMLElement`. Node.js, NestJS and SvelteKit projects get `environment: 'node'` instead.
+- `globals: true` lets you use `describe`, `it` and `expect` without importing them.
+
+## Step 3 — install the coverage provider
+
+The `test:coverage` script needs a provider package. It is not installed automatically, because the choice belongs to you:
+
+```bash
+npm i -D @vitest/coverage-v8
+```
+
+The V8 provider uses the coverage data that Node.js already collects, so there is no extra instrumentation step.
+
+## Step 4 — point the config at the setup file
+
+The Testing Library module writes `src/test/setup.ts`:
+
+```typescript
+import '@testing-library/jest-dom/vitest';
+```
+
+Reference it from the Vitest config so the jest-dom matchers — `toBeInTheDocument()`, `toHaveTextContent()` — are available:
+
+```typescript
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
+  },
+});
+```
+
+## Step 5 — scope the coverage report
+
+By default the V8 provider reports on every file it sees, including configs and test helpers. Limit it to your source directory:
+
+```typescript
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/test/**',
+        'src/main.tsx',
+        'src/vite-env.d.ts',
+      ],
+    },
+```
+
+## Step 6 — set thresholds
+
+DevFlow does not set a threshold, because a threshold is a decision about your project rather than a sensible default. Add one when you are ready for it:
+
+```typescript
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      include: ['src/**/*.{ts,tsx}'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+    },
+```
+
+Vitest fails the run when the report is below the threshold, so the check is meaningful in CI.
+
+## Step 7 — publish the coverage on pull requests
+
+The `lcov` reporter writes `coverage/lcov.info`. Upload it with the Codecov action:
+
+```yaml
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
+```
+
+`fail_ci_if_error: true` means a failed upload fails the pipeline instead of silently passing. If you self-host Codecov, use your own URL and token.
+
+## Step 8 — run it
+
+```bash
+npm test              # single run
+npm run test:watch    # watch mode
+npm run test:coverage # with the lcov report
+```
+
+## Manual setup versus DevFlow
+
+The manual version is five install commands, a config file written from memory, and then a debugging session for each missing piece: the environment, the React plugin, the coverage provider, the setup file reference. DevFlow writes the config with the right environment and plugin for the detected stack, and the guide covers the three steps it deliberately leaves to you.
+
+## Limits
+
+- **The coverage provider is not installed automatically.** `test:coverage` fails until you add `@vitest/coverage-v8`.
+- **The setup file is not referenced automatically.** Add `setupFiles` to the config, as shown above.
+- **No thresholds and no `include` glob** in the generated config — both are project decisions.
+- **The reporter list is `text` and `lcov`.** If you want an HTML report, add `'html'` to the reporter array.
+- **No browser-mode configuration.** Vitest's browser mode has its own provider and setup; DevFlow does not generate it.
+- **Conflicts with Jest.** The wizard blocks the pair.
+
+## FAQ
+
+### Where do I put the Vitest setup file?
+
+`src/test/setup.ts` — that is where the Testing Library module writes it. Reference it from `vitest.config.ts` with `setupFiles: ['./src/test/setup.ts']`.
+
+### How do I publish coverage to a pull request?
+
+Generate the lcov report with `npm run test:coverage` and upload it with the `codecov/codecov-action` action. Step 7 has the exact workflow step.
+
+### Which test environment is used?
+
+`jsdom` for React, Next.js, Vue and Nuxt projects, and `node` for Node.js, NestJS and SvelteKit projects.
+
+### Does DevFlow set coverage thresholds?
+
+No. It configures the V8 provider with the `text` and `lcov` reporters, but it does not pick a threshold for you. Step 6 shows how to add one.
+
+## Related
+
+- [Vitest module](/modules/vitest) — what the test module generates
+- [GitHub Actions CI/CD for Next.js](/guides/github-actions-nextjs) — the pipeline the tests run in
+- [Testing reference](/docs/modules/testing) — Jest, Playwright, Cypress and MSW

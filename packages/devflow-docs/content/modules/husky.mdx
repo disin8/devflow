@@ -1,0 +1,116 @@
+---
+title: Husky Module
+description: "DevFlow installs Husky, adds the prepare script and writes the pre-commit and commit-msg hooks that run lint-staged and Commitlint."
+---
+
+## The problem
+
+A Git hook that nobody can reproduce is worse than no hook at all. Copying `.husky/pre-commit` from another repository usually brings three problems with it:
+
+- it calls `npm run lint` even though the project uses pnpm
+- it calls a tool the project does not have installed
+- the `prepare` script is missing, so `husky install` never runs after `npm install`
+
+The result is a hook that silently does nothing, or one that fails on a fresh clone.
+
+## The command
+
+```bash
+npx create-devflow --only husky
+```
+
+The full Git setup — Husky, lint-staged and Commitlint together — is one flag:
+
+```bash
+npx create-devflow --husky
+```
+
+## Generated files
+
+### `.husky/pre-commit`
+
+When the lint-staged module is also applied:
+
+```bash
+npx lint-staged
+```
+
+Without lint-staged, the hook falls back to a full lint:
+
+```bash
+npm run lint
+```
+
+### `.husky/commit-msg`
+
+```bash
+npx --no -- commitlint --edit "$1"
+```
+
+### `.husky/pre-push`
+
+Only created when the `pre-push` hook is explicitly requested. It runs the type check and the test suite before the push leaves your machine:
+
+```bash
+npm run typecheck && npm run test
+```
+
+## Packages installed
+
+| Package | Type |
+| --- | --- |
+| `husky` | dev dependency |
+
+## Scripts added
+
+| Script | Command |
+| --- | --- |
+| `prepare` | `husky` |
+
+The `prepare` script is the important one. It runs on every `npm install` / `pnpm install`, which is what installs the hook scripts into `.git/hooks`. Without it the hooks exist as files but never fire.
+
+## Manual setup versus DevFlow
+
+The manual version is four commands and a file:
+
+```bash
+npm i -D husky
+npx husky init
+echo "npx lint-staged" > .husky/pre-commit
+```
+
+`husky init` creates a `prepare` script and an example hook, and the rest is manual. The part that is easy to get wrong is the `commit-msg` hook: it needs `npx --no --` so that `commitlint` is resolved from the local `node_modules` instead of being downloaded on the fly.
+
+DevFlow writes the correct hook bodies for the tools that are actually installed in the project.
+
+## Limits
+
+- **A Git repository is required.** Husky installs into `.git/hooks`. In a directory that is not a Git repository, the files are written but the hooks never run.
+- **`pre-push` runs the full type check and test suite.** That is slow on a large repository. It is opt-in for that reason.
+- **The fallback hook calls `npm run lint`.** If your project uses pnpm or yarn, install the lint-staged module so the hook uses `npx lint-staged` instead, or edit the hook file.
+- **No Lefthook.** The Lefthook module is an alternative to this one; the wizard blocks the pair.
+
+## FAQ
+
+### Why does the pre-commit hook run lint-staged instead of the full lint?
+
+Running the full lint on every commit gets slow as the codebase grows. With lint-staged, only the files in your commit are checked. Without lint-staged, the hook falls back to `npm run lint`.
+
+### Do I need to run `git init` first?
+
+Husky needs a Git repository because it writes into `.git/hooks`. DevFlow writes the `.husky` directory either way, but the hooks only become active in a Git repository.
+
+### How do I skip the hook for one commit?
+
+```bash
+git commit --no-verify
+```
+
+The `commit-msg` hook is skipped as well, so the commit message is not validated.
+
+## Related
+
+- [lint-staged module](/modules/lint-staged) — the fast path the hook uses
+- [Commitlint module](/modules/commitlint) — validates the commit message
+- [Conventional Commits with Commitlint and Husky](/guides/conventional-commits)
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)

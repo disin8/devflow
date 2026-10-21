@@ -1,0 +1,95 @@
+---
+title: Prettier Module
+description: "DevFlow writes a .prettierrc.json with a 100-column, single-quote, semicolon-first style and a .prettierignore, then adds the format scripts."
+---
+
+## The problem
+
+Prettier is easy to install and easy to get wrong in a way that shows up weeks later: a `printWidth` of 80 in one repository and 100 in another, `singleQuote` toggled per team, and a `.prettierignore` that does not list `dist/`, so `pnpm format` reformats three thousand build artefacts.
+
+The second problem is the interaction with ESLint. If ESLint still carries the deprecated formatting rules, both tools rewrite the same line and the diff becomes noise.
+
+## The command
+
+```bash
+npx create-devflow --only prettier
+```
+
+## Generated files
+
+### `.prettierrc.json`
+
+```json
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "arrowParens": "always",
+  "endOfLine": "lf"
+}
+```
+
+### `.prettierignore`
+
+```
+dist/
+build/
+node_modules/
+coverage/
+.next/
+.nuxt/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+```
+
+## Packages installed
+
+| Package | Type |
+| --- | --- |
+| `prettier` | dev dependency |
+
+## Scripts added
+
+| Script | Command |
+| --- | --- |
+| `format` | `prettier --write .` |
+| `format:check` | `prettier --check .` |
+
+`format:check` is the one to run in CI — it fails on unformatted files without rewriting them, which is exactly what a pull request check should do.
+
+## Manual setup versus DevFlow
+
+The manual version is `npm i -D prettier`, `npx prettier --init`, and then a `.prettierignore` you write from memory. The `.prettierinit` wizard writes a config, but it does not write an ignore file, and it does not add the npm scripts, so the next repository starts from zero again.
+
+DevFlow writes the config, the ignore file and the scripts in one step, with the same values in every repository.
+
+## Limits
+
+- **The style is a fixed baseline.** 100 columns, single quotes, semicolons, trailing commas, LF line endings. It is a sane, widely used default — it is not your house style. Edit `.prettierrc.json` after generation; it is never overwritten on re-runs.
+- **No `.editorconfig` integration.** Prettier does not read `.editorconfig` by default. The [EditorConfig module](/docs/modules/quality) writes a matching `.editorconfig` if you want editors to agree with the formatter.
+- **No conflict with ESLint is required, but you should check it.** If your existing ESLint config still enables formatting rules such as `indent` or `quotes`, the two tools will disagree. The [ESLint, Prettier and Husky guide](/guides/eslint-prettier-husky) shows the exact fix.
+- **Conflicts with Biome.** The Biome module replaces Prettier entirely, so the wizard blocks the pair.
+
+## FAQ
+
+### Does DevFlow overwrite my existing Prettier config?
+
+No. `.prettierrc.json` and `.prettierignore` are created with skip-if-exists semantics. An existing `.prettierrc`, `prettier.config.js` or `prettier.config.mjs` is left alone.
+
+### Does Prettier conflict with ESLint?
+
+Not with the configuration DevFlow generates — it contains no stylistic rules. It can conflict with a hand-written ESLint config that still enables the deprecated formatting rules. The guide explains how to remove them.
+
+### Which package manager does `format` use?
+
+None. The script calls the `prettier` binary from `node_modules/.bin`, so it works identically with npm, pnpm, yarn and bun.
+
+## Related
+
+- [ESLint module](/modules/eslint) — the linter that pairs with this formatter
+- [lint-staged module](/modules/lint-staged) — format only the files you changed
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)
+- [CLI reference](/cli)

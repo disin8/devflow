@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changelog is auto-generated with [changelogen](https://github.com/unjs/changelogen).
 
+## v0.1.2
+
+[compare changes](https://github.com/disin8/devflow/compare/v0.1.1...v0.1.2)
+
+### 🩹 Fixes
+
+- Update npm ver; remove another gituhb badge ([ddfa96d](https://github.com/disin8/devflow/commit/ddfa96d))
+- SEO sitemap generation is regenerated now during the build ([c0472ff](https://github.com/disin8/devflow/commit/c0472ff))
+- Remove lastmod to check the correct of SEO build setup ([dd2f66a](https://github.com/disin8/devflow/commit/dd2f66a))
+
+### ❤️ Contributors
+
+- Disin8 <dmitry.sin8@gmail.com>
+
+## v0.1.1...main
+
+[compare changes](https://github.com/disin8/devflow/compare/v0.1.1...main)
+
+### 🩹 Fixes
+
+- Update npm ver; remove another gituhb badge ([ddfa96d](https://github.com/disin8/devflow/commit/ddfa96d))
+- SEO sitemap generation is regenerated now during the build ([c0472ff](https://github.com/disin8/devflow/commit/c0472ff))
+- Remove lastmod to check the correct of SEO build setup ([dd2f66a](https://github.com/disin8/devflow/commit/dd2f66a))
+
+### ❤️ Contributors
+
+- Disin8 <dmitry.sin8@gmail.com>
+
 ## v0.1.1
 
 

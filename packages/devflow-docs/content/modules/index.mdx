@@ -1,0 +1,142 @@
+---
+title: DevFlow Modules
+description: "All 50 DevFlow modules grouped by category. Every module page lists the exact files it creates, the packages it installs and the scripts it adds."
+---
+
+DevFlow ships **50 modules** in **10 categories**. Each module is an independent unit: it can be applied on its own, it never overwrites a file that already exists, and every page below lists the exact artefacts it produces.
+
+```bash
+# Apply a single module
+npx create-devflow --only eslint
+
+# Preview a single module without touching the project
+npx create-devflow --only eslint --dry-run
+```
+
+## How to read these pages
+
+Each module page follows the same structure so you can compare them quickly:
+
+1. **The problem** — what breaks when you configure this by hand
+2. **The command** — the exact invocation
+3. **Generated files** — the real file contents, not a summary
+4. **Packages and scripts** — what ends up in `package.json`
+5. **Manual setup** — what the equivalent hand-written configuration looks like
+6. **Limits** — what the module does *not* do
+7. **FAQ** — the objections people actually raise
+
+## Lint & format
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| ESLint | [ESLint module](/modules/eslint) | `eslint.config.mjs` |
+| Prettier | [Prettier module](/modules/prettier) | `.prettierrc.json`, `.prettierignore` |
+| TypeScript strict | — | `tsconfig.json` (only when missing) |
+| Biome | — | `biome.json` |
+| EditorConfig | — | `.editorconfig` |
+| Stylelint | — | `.stylelintrc.json` |
+| markdownlint | — | `.markdownlint.json` |
+| cspell | — | `cspell.json` |
+
+## Git hooks & commits
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| Husky | [Husky module](/modules/husky) | `.husky/pre-commit`, `.husky/commit-msg` |
+| lint-staged | [lint-staged module](/modules/lint-staged) | `lint-staged.config.mjs` or `package.json` key |
+| Commitlint | [Commitlint module](/modules/commitlint) | `commitlint.config.mjs` |
+| Commitizen | — | `package.json` config + `commit` script |
+| Lefthook | — | `lefthook.yml` |
+| git-cliff | — | `cliff.toml` |
+| standard-version | — | `.versionrc.json` |
+
+## Testing
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| Vitest | [Vitest module](/modules/vitest) | `vitest.config.ts` |
+| Testing Library | — | `src/test/setup.ts` |
+| Jest | — | `jest.config.ts` / `jest.config.mjs` |
+| Playwright | — | `playwright.config.ts`, `e2e/example.spec.ts` |
+| Cypress | — | `cypress.config.ts` and support files |
+| Mock Service Worker | — | `src/mocks/handlers.ts`, `src/mocks/server.ts` |
+
+## CI/CD
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| GitHub Actions | [GitHub Actions module](/modules/github-actions) | `.github/workflows/ci.yml` |
+| GitLab CI | — | `.gitlab-ci.yml` |
+| Codecov | — | `codecov.yml` |
+| Dependabot | — | `.github/dependabot.yml` |
+| Renovate | — | `renovate.json` |
+
+## Containers
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| Dockerfile | [Docker module](/modules/docker) | `Dockerfile` |
+| Docker Compose | — | `docker-compose.yml` |
+| .dockerignore | — | `.dockerignore` |
+
+## Monorepo
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| Turborepo | [Monorepo module](/modules/monorepo) | `turbo.json` + `turbo` scripts |
+| Nx | [Monorepo module](/modules/monorepo) | `nx.json` |
+| Workspaces | [Monorepo module](/modules/monorepo) | `pnpm-workspace.yaml`, `tsconfig.base.json` |
+
+## Security
+
+| Module | Landing page | Generates |
+| --- | --- | --- |
+| npm audit | [Security module](/modules/security) | `audit` script |
+| Gitleaks | [Security module](/modules/security) | `.gitleaks.toml`, `.github/workflows/gitleaks.yml` |
+| Trivy | [Security module](/modules/security) | `.github/workflows/trivy.yml` |
+| OSV-Scanner | [Security module](/modules/security) | `.github/workflows/osv-scanner.yml` |
+
+## Releases and documentation
+
+| Module | Generates |
+| --- | --- |
+| release-it | `.release-it.json` |
+| Changesets | `.changeset/config.json`, `.changeset/README.md` |
+| semantic-release | `.releaserc.json` |
+| conventional-changelog | `changelog` script |
+| README | `README.md` |
+| CONTRIBUTING | `CONTRIBUTING.md` |
+| CODE_OF_CONDUCT | `CODE_OF_CONDUCT.md` |
+| SECURITY.md | `SECURITY.md` |
+| LICENSE | `LICENSE` (MIT, Apache-2.0 or proprietary) |
+
+## Developer environment
+
+| Module | Generates |
+| --- | --- |
+| .nvmrc | `.nvmrc` or a `volta` block in `package.json` |
+| .env.example | `.env.example` and `.gitignore` entries |
+| VS Code | `.vscode/extensions.json`, `.vscode/settings.json` |
+| Dev Container | `.devcontainer/devcontainer.json` |
+| Makefile | `Makefile` |
+
+## Conflicts
+
+Some modules replace each other and cannot be applied together. The interactive wizard blocks the conflicting pairs, and `--only` accepts a single id so you cannot create the conflict by accident:
+
+| Pair | Use instead of |
+| --- | --- |
+| Husky ↔ Lefthook | Pick one hook manager |
+| ESLint + Prettier ↔ Biome | Biome replaces both |
+| Vitest ↔ Jest | Pick one test runner |
+| Playwright ↔ Cypress | Pick one E2E runner |
+| Renovate ↔ Dependabot | Pick one update bot |
+| release-it ↔ semantic-release | Pick one release driver |
+| Nx ↔ Turborepo | Pick one build system |
+
+## Related
+
+- [CLI reference](/cli) — every flag, with examples
+- [Presets](/docs/presets) — Minimal, Recommended and Full
+- [Dry run mode](/docs/dry-run) — preview every change first
+- [Guides](/guides) — task-based walkthroughs

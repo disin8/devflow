@@ -1,6 +1,6 @@
 ---
 title: Configuration
-description: "How DevFlow auto-detects your package manager (npm, pnpm, yarn, bun), TypeScript, tech stack (React, Next.js, Vue, NestJS), and monorepo setup. Override any detected value with CLI flags."
+description: "How DevFlow detects your package manager, TypeScript, React, Next.js, Vue or NestJS stack and monorepo layout, and which flags override it."
 ---
 
 ## Project Detection
@@ -63,6 +63,6 @@ devflow --ci gitlab
 
 DevFlow is **idempotent**. Every module's `detect()` method checks for existing configurations:
 
-- If a config file already exists (e.g., `eslint.config.js`), the module reports `alreadyConfigured: true`
-- The wizard shows this status, letting you decide whether to skip or overwrite
-- File creation actions use `skipIfExists: true` by default
+- If a config file already exists (e.g., `eslint.config.mjs`), the file is left untouched — every create-file action is skip-if-exists
+- The wizard shows the detected modules, and the file is never overwritten on a re-run
+- File creation actions use `skipIfExists: true` by default, and `package.json` is merged rather than replaced

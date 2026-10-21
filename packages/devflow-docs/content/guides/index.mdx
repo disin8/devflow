@@ -1,0 +1,85 @@
+---
+title: Setup Guides
+description: "Task-based walkthroughs: ESLint with Prettier and Husky, GitHub Actions for Next.js, Vitest with coverage, Docker for NestJS, Turborepo CI."
+---
+
+Every guide on this page solves one specific problem end to end. A guide shows the problem, the exact command, the files that end up in your repository, what the CI run looks like, and what the setup does **not** cover.
+
+If you want the opposite view — what a single tool generates — go to the [module pages](/modules). A module page answers "what files does this create?", a guide answers "how do I solve this problem?".
+
+## Lint and format
+
+### [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)
+
+The three tools that belong together, in the order that avoids the classic "ESLint and Prettier disagree" bug. Includes the flat config, the `.prettierrc`, the pre-commit hook and the CI check.
+
+```bash
+npx create-devflow --lint --husky
+```
+
+## CI/CD
+
+### [GitHub Actions CI/CD for Next.js](/guides/github-actions-nextjs)
+
+A pull request pipeline that lints, type-checks, tests and builds a Next.js application — and where the deploy step actually belongs.
+
+```bash
+npx create-devflow --ci github
+```
+
+## Testing
+
+### [Vitest setup for React and TypeScript](/guides/vitest-react-typescript)
+
+Vitest with a jsdom environment, React Testing Library, V8 coverage, coverage thresholds and a coverage report on every pull request.
+
+```bash
+npx create-devflow --test
+```
+
+## Containers
+
+### [Docker setup for NestJS](/guides/nestjs-docker)
+
+Multi-stage build, non-root runtime user, health check, image size and building and pushing the image from CI.
+
+```bash
+npx create-devflow --docker
+```
+
+## Monorepo
+
+### [Turborepo CI/CD with GitHub Actions and pnpm workspaces](/guides/turborepo-ci)
+
+Remote caching, affected-package filtering, a shared ESLint config and parallel lint, test and build tasks.
+
+```bash
+npx create-devflow --only turborepo --only workspaces
+```
+
+## Commits
+
+### [Conventional Commits with Commitlint and Husky](/guides/conventional-commits)
+
+Enforce the commit format on every commit, connect it to a changelog, and validate it in CI as well.
+
+```bash
+npx create-devflow --husky
+```
+
+## Security
+
+### [Security scanning in CI](/guides/security-ci)
+
+Dependency auditing, secret detection and container scanning wired into the pull request pipeline.
+
+```bash
+npx create-devflow --security
+```
+
+## Still choosing?
+
+- [Presets](/docs/presets) — Minimal, Recommended and Full, and what each one includes
+- [CLI reference](/cli) — every flag with examples
+- [Dry run mode](/docs/dry-run) — preview any guide before applying it
+- [Comparisons](/compare) — DevFlow versus manual setup, Nx, Turborepo and `create-next-app`

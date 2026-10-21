@@ -13,8 +13,8 @@ const logos = [
 
 function LogoPlaceholder({ name }: { name: string }) {
   return (
-    <div className="flex items-center gap-2 opacity-50 hover:opacity-80 transition-opacity">
-      <span className="font-roboto-mono text-[14px] font-medium text-foreground/60 uppercase tracking-wider">
+    <div className="flex items-center gap-2 opacity-60 transition-opacity hover:opacity-100">
+      <span className="font-roboto-mono text-[14px] font-medium text-foreground/70 uppercase tracking-wider">
         {name}
       </span>
     </div>

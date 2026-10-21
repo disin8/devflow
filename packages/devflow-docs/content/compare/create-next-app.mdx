@@ -1,0 +1,88 @@
+---
+title: DevFlow vs create-next-app
+description: "create-next-app creates a Next.js application. DevFlow CLI configures the development workflow around it. Here is how to use both, in the right order."
+---
+
+## The short version
+
+`create-next-app` and DevFlow do different jobs. Use both, in this order.
+
+| | `create-next-app` | DevFlow CLI |
+| --- | --- | --- |
+| Creates the application | Yes | No |
+| Adds a development workflow | Partially — ESLint and a basic setup | Yes — hooks, linting, tests, CI, Docker, security |
+| Works on an existing project | No | Yes |
+| Generates a Next.js application | Yes | No |
+| Adds CI/CD | No | Yes |
+| Adds Git hooks | No | Yes |
+| Adds tests | No | Yes |
+| Adds Docker | No | Yes |
+| Adds security scanning | No | Yes |
+
+## The order that works
+
+### Step 1 — create the application
+
+```bash
+npx create-next-app@latest my-app --typescript --app --src-dir --eslint
+```
+
+### Step 2 — add the workflow
+
+```bash
+cd my-app
+npx create-devflow --all --dry-run
+```
+
+Read the plan. Then apply it:
+
+```bash
+npx create-devflow --all
+```
+
+### What DevFlow adds to a fresh create-next-app project
+
+`create-next-app` already generates an ESLint configuration, so DevFlow will **not** overwrite it — the existing file is left exactly as it is. Everything else is new:
+
+| Added | File |
+| --- | --- |
+| Git hooks | `.husky/pre-commit`, `.husky/commit-msg` |
+| Commit validation | `commitlint.config.mjs` |
+| Formatting | `.prettierrc.json`, `.prettierignore` |
+| Testing | `vitest.config.ts`, `src/test/setup.ts` |
+| CI/CD | `.github/workflows/ci.yml` |
+| Container | `Dockerfile`, `docker-compose.yml`, `.dockerignore` |
+| Editor and environment | `.editorconfig`, `.nvmrc`, `.env.example`, `.vscode/` |
+| Documentation | `README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `LICENSE` |
+| Security | `audit` script, `.gitleaks.toml`, `.github/workflows/gitleaks.yml` |
+
+## Which ESLint config should you keep
+
+This is the one real decision. `create-next-app` writes an ESLint config; DevFlow writes a different one. Because DevFlow never overwrites an existing file, whichever is there first wins.
+
+| Keep `create-next-app`'s | Use DevFlow's |
+| --- | --- |
+| You want the Next.js plugin and its framework rules | You want a flat config with a documented rule set that also works in other packages |
+| You are starting a single Next.js app | You are extracting shared packages, or adding a second service |
+| You want the `next lint` integration | You want `eslint .` from the CLI, which is what the CI workflow runs |
+
+To switch to DevFlow's, delete the existing config first and re-run the module:
+
+```bash
+rm eslint.config.mjs
+npx create-devflow --only eslint
+```
+
+## What DevFlow does not do for Next.js
+
+- **It does not add `eslint-plugin-next`.** The generated config is React-flavoured.
+- **It does not add a deploy job.** Vercel builds from its own Git integration. See the [Next.js CI guide](/guides/github-actions-nextjs).
+- **It does not configure `next.config.js`.** Image optimisation, redirects and headers are application configuration, not workflow.
+- **It does not add a `Dockerfile` for the Next.js standalone output.** The generated Dockerfile expects a build that emits to `dist/`. For Next.js, add `output: "standalone"` to `next.config.js` and adjust the copy steps.
+
+## Related
+
+- [GitHub Actions CI/CD for Next.js](/guides/github-actions-nextjs) — the pipeline
+- [ESLint module](/modules/eslint) — the config DevFlow generates
+- [Docker module](/modules/docker) — the container files
+- [DevFlow vs manual setup](/compare/manual-setup) — the other comparison worth reading

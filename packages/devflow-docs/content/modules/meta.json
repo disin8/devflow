@@ -1,0 +1,25 @@
+{
+  "title": "Modules",
+  "description": "Every DevFlow module, the files it generates, the packages it installs and the scripts it adds.",
+  "pages": [
+    "index",
+    "---Lint & Format---",
+    "eslint",
+    "prettier",
+    "typescript",
+    "---Git Hooks & Commits---",
+    "husky",
+    "lint-staged",
+    "commitlint",
+    "---Testing---",
+    "vitest",
+    "---CI/CD---",
+    "github-actions",
+    "---Containers---",
+    "docker",
+    "---Monorepo---",
+    "monorepo",
+    "---Security---",
+    "security"
+  ]
+}

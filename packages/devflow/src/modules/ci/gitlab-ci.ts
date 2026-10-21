@@ -13,15 +13,18 @@ function buildPipeline(ctx: ProjectContext): string {
       : pm === "yarn"
         ? "corepack enable && yarn install --frozen-lockfile"
         : pm === "bun"
-          ? "curl -fsSL https://bun.sh/install | bash && bun install"
+          ? "curl -fsSL https://bun.sh/install | bash && bun install --frozen-lockfile"
           : "npm ci";
-  const runPrefix = pm === "npm" ? "npm run" : pm;
-  const cachePath =
+
+  const runPrefix = pm === "npm" ? "npm run" : `${pm} run`;
+  const cachePaths =
     pm === "pnpm"
-      ? ".pnpm-store"
+      ? [".pnpm-store", "node_modules/"]
       : pm === "yarn"
-        ? ".yarn/cache"
-        : "node_modules/";
+        ? [".yarn/cache", "node_modules/"]
+        : pm === "bun"
+          ? ["node_modules/"]
+          : ["node_modules/"];
 
   return `stages:
   - install
@@ -37,8 +40,7 @@ default:
   cache:
     key: \${CI_COMMIT_REF_SLUG}
     paths:
-      - ${cachePath}
-      - node_modules/
+${cachePaths.map((path) => `      - ${path}`).join("\n")}
 
 install:
   stage: install

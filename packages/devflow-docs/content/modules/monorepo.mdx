@@ -1,0 +1,150 @@
+---
+title: Monorepo Module
+description: "DevFlow detects an existing monorepo and generates turbo.json, nx.json or pnpm-workspace.yaml plus a strict tsconfig.base.json and workspace scripts."
+---
+
+## The problem
+
+A monorepo is where configuration drifts fastest. Each package ends up with its own ESLint config, its own Vitest setup and its own CI step, and the root has a `package.json` that no longer matches what the packages actually do.
+
+The second problem is the shared TypeScript configuration. Every package needs the same `compilerOptions` — the same `target`, `moduleResolution`, `strict` flag — and copying `tsconfig.json` into every package is how they drift apart.
+
+## The command
+
+```bash
+npx create-devflow --only turborepo
+npx create-devflow --only nx
+npx create-devflow --only workspaces
+```
+
+Or let DevFlow pick based on what it detects:
+
+```bash
+npx create-devflow --all
+```
+
+A project with `turbo.json` is detected as a Turborepo monorepo, `nx.json` as an Nx monorepo, and `pnpm-workspace.yaml` or a `workspaces` field as a plain workspace monorepo.
+
+## Generated files
+
+### `turbo.json`
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+### `nx.json`
+
+```json
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*"],
+    "production": ["default", "!{projectRoot}/**/*.spec.ts"]
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    }
+  }
+}
+```
+
+### `pnpm-workspace.yaml`
+
+```yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+```
+
+For npm and yarn the same patterns are merged into `package.json` as a `workspaces` array instead.
+
+### `tsconfig.base.json` — TypeScript monorepos
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true
+  }
+}
+```
+
+## Packages installed
+
+| Package | Module | Type |
+| --- | --- | --- |
+| `turbo` | Turborepo | dev dependency |
+| `nx` | Nx | dev dependency |
+
+## Scripts added
+
+| Script | Command | Module |
+| --- | --- | --- |
+| `build` | `turbo build` | Turborepo |
+| `lint` | `turbo lint` | Turborepo |
+| `test` | `turbo test` | Turborepo |
+| `dev` | `turbo dev` | Turborepo |
+| `lint:all` | `pnpm -r run lint` | Workspaces |
+| `test:all` | `pnpm -r run test` | Workspaces |
+
+The workspace scripts follow the package manager: `yarn workspaces foreach -A run lint` for yarn and `npm run lint --workspaces` for npm.
+
+## Manual setup versus DevFlow
+
+The manual version is: create the workspace file, add the build tool, copy the `tsconfig.json` into every package and keep them in sync by hand, then add the root scripts. DevFlow writes the shared base configuration and the scripts in one pass, and it detects an existing workspace instead of replacing it.
+
+## Limits
+
+- **The generated CI workflow is not monorepo-aware.** The [GitHub Actions module](/modules/github-actions) produces a single-repository pipeline without Turborepo remote caching or affected-package filtering. The [Turborepo CI guide](/guides/turborepo-ci) contains the exact diff to add them.
+- **A shared ESLint config is not generated.** The ESLint module writes a root `eslint.config.mjs` for the repository. Wiring each package to it is a project-specific step — the guide shows the two ways to do it.
+- **`tsconfig.base.json` is only written for TypeScript projects**, and only when `tsconfig.json` does not already exist.
+- **Nx and Turborepo conflict.** The wizard blocks the pair; pick one build system.
+
+## FAQ
+
+### Does DevFlow generate a monorepo-aware CI pipeline?
+
+Not by default. The generated GitHub Actions workflow is a single-repository pipeline. The Turborepo CI guide shows the diff that adds remote caching, affected-package filtering and parallel task execution.
+
+### Can DevFlow be used in an existing pnpm workspace?
+
+Yes. If `pnpm-workspace.yaml` already exists, the workspaces module keeps it and only adds the shared `tsconfig.base.json` and the `lint:all` and `test:all` scripts.
+
+### How do I share one ESLint config across the packages?
+
+Point each package's `eslint.config.mjs` at the root configuration, or add the root configuration to the `extends` array. The Turborepo guide shows both approaches.
+
+## Related
+
+- [Turborepo CI/CD with GitHub Actions and pnpm workspaces](/guides/turborepo-ci) — the monorepo pipeline
+- [Monorepo tooling reference](/docs/modules/monorepo)
+- [GitHub Actions module](/modules/github-actions) — the single-repository pipeline

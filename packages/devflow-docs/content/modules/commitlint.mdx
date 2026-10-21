@@ -1,0 +1,105 @@
+---
+title: Commitlint Module
+description: "DevFlow writes a commitlint.config.mjs extending @commitlint/config-conventional, with a strict variant for commit types, subject case and header length."
+---
+
+## The problem
+
+Conventional Commits only work if something enforces them. Without enforcement, the history fills up with `fixed stuff`, `update` and `WIP`, and every changelog generator and semantic release tool downstream produces noise.
+
+Enforcing it needs three pieces that have to agree with each other: the Commitlint configuration, the `@commitlint/config-conventional` preset, and a Git hook that actually runs it. Setting up only the configuration is the most common mistake — nothing checks anything until a human reads the changelog.
+
+## The command
+
+```bash
+npx create-devflow --only commitlint
+```
+
+To get the hook that runs it as well:
+
+```bash
+npx create-devflow --husky
+```
+
+## Generated files
+
+### `commitlint.config.mjs` — strict mode (default)
+
+```javascript
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [
+      2,
+      'always',
+      [
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'build',
+        'ci',
+        'chore',
+        'revert',
+      ],
+    ],
+    'subject-case': [2, 'never', ['start-case', 'pascal-case', 'upper-case']],
+    'header-max-length': [2, 'always', 100],
+  },
+};
+```
+
+### `commitlint.config.mjs` — loose mode
+
+```javascript
+export default {
+  extends: ['@commitlint/config-conventional'],
+};
+```
+
+Loose mode is available in the interactive wizard. It allows any type the Conventional Commits preset supports and does not enforce the subject case or the length limit.
+
+## Packages installed
+
+| Package | Type |
+| --- | --- |
+| `@commitlint/cli` | dev dependency |
+| `@commitlint/config-conventional` | dev dependency |
+
+## Scripts added
+
+None. Commitlint is invoked from the `.husky/commit-msg` hook.
+
+## Manual setup versus DevFlow
+
+The manual version is `npm i -D @commitlint/cli @commitlint/config-conventional` plus a `commitlint.config.js`. The configuration itself is one line — the value DevFlow adds is the strict preset, the `commit-msg` hook that runs it, and the fact that both are written in the same pass.
+
+## Limits
+
+- **The configuration alone does nothing.** Without the `commit-msg` hook, Commitlint is never invoked locally. Apply the [Husky module](/modules/husky) too, or add a Commitlint step to your CI pipeline.
+- **`type-enum` is restrictive by design.** The strict list does not include `perf` variants beyond the base type, nor community types such as `wip` or `hotfix`. Add them to the list if your team uses them.
+- **`subject-case` rejects the whole subject**, not just the first letter. `feat: Add login` fails; `feat: add login` passes.
+- **No `body-max-line-length` rule** is added, so long body lines are not rejected.
+
+## FAQ
+
+### Which commit types does the strict configuration allow?
+
+`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` and `revert`.
+
+### Can I use Commitlint without Husky?
+
+Yes. Delete `.husky/commit-msg` and add a Commitlint step to your CI pipeline instead, so pull requests are validated even if a developer commits without hooks.
+
+### Does Commitlint work with a monorepo?
+
+Yes. The configuration file sits at the repository root, which is where the hook runs from.
+
+## Related
+
+- [Husky module](/modules/husky) — the hook that runs Commitlint
+- [Conventional Commits with Commitlint and Husky](/guides/conventional-commits) — the full walkthrough
+- [Git and Commits reference](/docs/modules/git) — every module in this category

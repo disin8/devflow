@@ -1,0 +1,193 @@
+---
+title: ESLint, Prettier and Husky Setup for React and TypeScript
+description: "Set up ESLint, Prettier, lint-staged and Husky in an existing React or TypeScript project in one command — flat config, pre-commit hook and CI check."
+---
+
+## The problem
+
+This is the most common setup in a TypeScript repository, and the most commonly done badly. The failure mode is always the same: ESLint and Prettier both want to own formatting, so a `git diff` after a commit shows lines that were reformatted a second time by the other tool.
+
+The other half of the problem is speed. Running the whole linter on every commit is why so many teams end up with `--no-verify` in their muscle memory.
+
+## What you get
+
+| File | Purpose |
+| --- | --- |
+| `eslint.config.mjs` | flat config with TypeScript, React and React Hooks rules |
+| `.prettierrc.json` | one shared formatting style |
+| `.prettierignore` | keeps build output and lock files out of the formatter |
+| `lint-staged.config.mjs` or `package.json` key | runs ESLint and Prettier on staged files only |
+| `.husky/pre-commit` | triggers lint-staged on commit |
+| `.husky/commit-msg` | validates the commit message with Commitlint |
+| `.editorconfig` | makes editors agree with the formatter |
+
+## Step 1 — preview the change
+
+```bash
+npx create-devflow --dry-run --lint --husky
+```
+
+```text
+Execution Plan
+
+  Files to create:
+    ✚ .editorconfig
+    ✚ .husky/pre-commit
+    ✚ .husky/commit-msg
+    ✚ .prettierignore
+    ✚ .prettierrc.json
+    ✚ commitlint.config.mjs
+    ✚ eslint.config.mjs
+    ✚ lint-staged.config.mjs
+
+  Packages to install:
+    📦 devDependencies: @commitlint/cli, @commitlint/config-conventional, @eslint/js,
+       eslint, eslint-plugin-react, eslint-plugin-react-hooks, husky, lint-staged,
+       prettier, typescript-eslint
+
+  Scripts to add:
+    ▸ prepare: husky
+    ▸ lint: eslint .
+    ▸ lint:fix: eslint . --fix
+    ▸ format: prettier --write .
+    ▸ format:check: prettier --check .
+```
+
+## Step 2 — apply it
+
+```bash
+npx create-devflow --lint --husky
+```
+
+`--lint` applies ESLint, Prettier and EditorConfig. `--husky` applies Husky, lint-staged and Commitlint. The two flags together give you the complete setup.
+
+## Step 3 — check the generated ESLint config
+
+`eslint.config.mjs` for a React + TypeScript project:
+
+```javascript
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+
+export default [
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    plugins: { react, 'react-hooks': reactHooks },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', 'build/', '.next/', '.nuxt/'],
+  },
+];
+```
+
+Two details matter here:
+
+- **No stylistic rules.** The config extends only the *recommended* rule sets, which contain no formatting rules. ESLint never rewrites your formatting, so it cannot disagree with Prettier.
+- **The `ignores` block.** Without it, `eslint .` lints `dist/` and `node_modules/` and reports thousands of errors on the first run.
+
+## Step 4 — check the pre-commit hook
+
+`.husky/pre-commit`:
+
+```bash
+npx lint-staged
+```
+
+Only the files you staged are checked. The `lint-staged` configuration:
+
+```javascript
+export default {
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,yml,yaml,css,scss}": ["prettier --write"]
+};
+```
+
+ESLint runs first and fixes what it can, then Prettier formats. The order matters: Prettier always has the last word, so the two tools cannot produce a conflict.
+
+## Step 5 — run the checks once
+
+```bash
+npm run lint
+npm run format:check
+```
+
+Fix anything that comes up before your first commit:
+
+```bash
+npm run lint:fix
+npm run format
+```
+
+## Step 6 — enforce it in CI
+
+Local hooks are bypassed with `git commit --no-verify`, and they do not run at all on a pull request from a fork. The check has to be in the pipeline. Add the [GitHub Actions module](/modules/github-actions):
+
+```bash
+npx create-devflow --ci github
+```
+
+The generated workflow runs the same two commands:
+
+```yaml
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Format check
+        run: pnpm run format:check
+```
+
+Add the format check step yourself — the generated workflow covers lint, type-check, test and build, but not formatting.
+
+## Manual setup versus DevFlow
+
+| Step | By hand | With DevFlow |
+| --- | --- | --- |
+| Install | 7 packages, in the right order | one command |
+| ESLint config | copy a flat config, hope the plugins match your stack | derived from the detected stack |
+| Prettier config | `prettier --init` and no ignore file | config and ignore file together |
+| Ignore patterns | usually missing, so `dist/` gets linted | `dist/`, `build/`, `.next/`, `.nuxt/`, lock files |
+| Pre-commit hook | `npx husky init` then edit the file by hand | correct hook body for the installed tools |
+| `prepare` script | easy to forget, so hooks never activate | written together with the hooks |
+| CI check | copy a workflow, then rename the steps | same scripts the modules add |
+
+## Limits
+
+- **Flat config only.** DevFlow writes `eslint.config.mjs`. It does not migrate an existing `.eslintrc.*`.
+- **No type-aware rules.** `no-floating-promises` and similar rules need a `projectService` configuration that depends on your `tsconfig.json` layout, so DevFlow does not enable them.
+- **No `eslint-plugin-next`.** The generated config is React-flavoured and works for both Next.js routers, but it does not add the Next.js plugin.
+- **The Prettier style is a baseline.** 100 columns, single quotes, semicolons, trailing commas, LF. Edit `.prettierrc.json` to match your house style — it is never overwritten on re-runs.
+- **`format:check` is not in the generated CI workflow.** Add it yourself, as shown above.
+
+## FAQ
+
+### How do I avoid ESLint and Prettier fighting over formatting?
+
+Do not enable ESLint's formatting rules. The config DevFlow generates only extends the recommended rule sets, which contain no stylistic rules, and lint-staged runs `eslint --fix` followed by `prettier --write` so Prettier always has the last word.
+
+### Do I need lint-staged?
+
+No, but it is recommended. Without it, the pre-commit hook runs the full `npm run lint` on every commit, which gets slow as the codebase grows.
+
+### Why does my commit fail with a commitlint error?
+
+The `commit-msg` hook runs Commitlint against the Conventional Commits format. The strict configuration accepts a fixed set of types, requires a lower-case subject and caps the header at 100 characters. A valid message looks like `feat(eslint): add flat config`.
+
+### Does DevFlow overwrite my existing ESLint config?
+
+No. Every generated file is created with skip-if-exists semantics. `package.json` is merged, and existing scripts are never replaced.
+
+## Related
+
+- [ESLint module](/modules/eslint) — what the linter module generates
+- [Prettier module](/modules/prettier) — what the formatter module generates
+- [Husky module](/modules/husky) — what the hook module generates
+- [lint-staged module](/modules/lint-staged)
+- [GitHub Actions CI/CD for Next.js](/guides/github-actions-nextjs)

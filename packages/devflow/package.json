@@ -1,7 +1,7 @@
 {
   "name": "create-devflow",
   "version": "0.1.1",
-  "description": "CLI utility to bootstrap a complete DevFlow in any repo: Git hooks, commit convention, lint/format, tests, typecheck, CI/CD, releases, security, Docker, monorepo support",
+  "description": "CLI that generates reproducible developer workflows for TypeScript, React, Node.js and monorepos: ESLint, Prettier, Husky, Vitest, GitHub Actions, Docker and security configs in one command.",
   "type": "module",
   "bin": {
     "create-devflow": "./bin/devflow.js",
@@ -11,7 +11,9 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",
@@ -26,19 +28,34 @@
   },
   "keywords": [
     "devflow",
+    "create-devflow",
+    "devflow-cli",
     "cli",
     "scaffolding",
     "husky",
     "eslint",
     "prettier",
     "commitlint",
+    "vitest",
+    "github-actions",
     "ci",
     "cd",
+    "docker",
     "monorepo",
-    "developer-experience"
+    "turborepo",
+    "developer-experience",
+    "developer-workflow"
   ],
-  "author": "",
+  "author": "disin8",
   "license": "MIT",
+  "homepage": "https://dev-flow.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/disin8/devflow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/disin8/devflow/issues"
+  },
   "engines": {
     "node": ">=18.0.0"
   },

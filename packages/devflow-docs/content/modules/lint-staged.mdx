@@ -1,0 +1,90 @@
+---
+title: lint-staged Module
+description: "DevFlow installs lint-staged and configures it to run ESLint and Prettier on staged files only, in package.json or a monorepo config file."
+---
+
+## The problem
+
+Running the whole linter on every commit is the reason teams disable their pre-commit hook. lint-staged fixes that by running the tools only on the files that are actually staged, which usually turns a ten-second lint into a half-second one.
+
+The part that is easy to copy wrong is *where* the configuration lives. In a single repository the `lint-staged` key in `package.json` is enough. In a monorepo the packages are installed per workspace, and a root-level configuration has to be a separate file for the resolution to work.
+
+## The command
+
+```bash
+npx create-devflow --only lint-staged
+```
+
+lint-staged depends on Husky, so the Husky module is resolved and applied automatically.
+
+## Generated files
+
+### Single repository — merged into `package.json`
+
+```json
+{
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,yml,yaml,css,scss}": ["prettier --write"]
+  }
+}
+```
+
+### Monorepo — `lint-staged.config.mjs`
+
+```javascript
+export default {
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,yml,yaml,css,scss}": ["prettier --write"]
+};
+```
+
+When the Biome module is used instead of ESLint and Prettier, the mapping becomes:
+
+```javascript
+export default {
+  "*.{js,jsx,ts,tsx,json,css}": ["biome check --apply"]
+};
+```
+
+## Packages installed
+
+| Package | Type |
+| --- | --- |
+| `lint-staged` | dev dependency |
+
+## Scripts added
+
+None. lint-staged is invoked from the Git hook, not from an npm script.
+
+## Manual setup versus DevFlow
+
+The manual version is `npm i -D lint-staged` and then writing the glob map. The glob map is where the copy-paste goes wrong most often: matching `*.{js,jsx,ts,tsx}` but forgetting that `.json`, `.md` and `.yml` also need formatting, or forgetting to exclude lock files.
+
+DevFlow writes both glob groups and picks the correct file location based on whether the project is a monorepo.
+
+## Limits
+
+- **The configuration assumes ESLint and Prettier are installed.** The `lint-staged` module does not install them. Apply the [ESLint module](/modules/eslint) and the [Prettier module](/modules/prettier) as well, or the hook will fail with a "command not found".
+- **The Biome variant only applies when the formatter option is set to Biome.** It is not detected automatically from an existing `biome.json`.
+- **Single-repository mode writes into `package.json`.** The `lint-staged` key is merged, and existing keys are not replaced — a key you already had stays as it was.
+
+## FAQ
+
+### Do I need lint-staged?
+
+No, but it is recommended. Without it the Husky pre-commit hook runs the full `npm run lint`, which becomes slow on larger codebases.
+
+### Where does the configuration live?
+
+In `package.json` for a single repository, and in `lint-staged.config.mjs` for a monorepo. DevFlow picks the right one based on the detected repository type.
+
+### Does it work with pnpm and yarn?
+
+Yes. The hook calls `npx lint-staged`, which resolves the binary from the local `node_modules/.bin` regardless of the package manager.
+
+## Related
+
+- [Husky module](/modules/husky) — the hook that triggers lint-staged
+- [ESLint module](/modules/eslint) and [Prettier module](/modules/prettier) — the tools it runs
+- [ESLint, Prettier and Husky setup for React and TypeScript](/guides/eslint-prettier-husky)

@@ -1,0 +1,21 @@
+{
+  "title": "Guides",
+  "description": "Task-based walkthroughs: each guide solves one setup problem end to end and shows the real files, commands and CI output.",
+  "pages": [
+    "index",
+    "---Lint & Format---",
+    "eslint-prettier-husky",
+    "---CI/CD---",
+    "github-actions-nextjs",
+    "---Testing---",
+    "vitest-react-typescript",
+    "---Containers---",
+    "nestjs-docker",
+    "---Monorepo---",
+    "turborepo-ci",
+    "---Commits---",
+    "conventional-commits",
+    "---Security---",
+    "security-ci"
+  ]
+}

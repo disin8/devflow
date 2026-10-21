@@ -1,0 +1,128 @@
+---
+title: Security Module
+description: "DevFlow adds a high-severity dependency audit script, a Gitleaks secret-detection workflow, and optional Trivy and OSV-Scanner workflows."
+---
+
+## The problem
+
+A secret that reaches the Git history is not deleted by removing it from the current branch. `git log -p` still has it, and a fork or a mirror may already have a copy. Finding that out months later is expensive.
+
+The second problem is dependency vulnerabilities. `npm audit` exists, but running it by hand is not a control — it has to run on every pull request, with a threshold that does not make the pipeline useless.
+
+## The command
+
+```bash
+npx create-devflow --security
+```
+
+That applies the audit script and Gitleaks. The other two scanners are individual modules:
+
+```bash
+npx create-devflow --only trivy
+npx create-devflow --only osv-scanner
+```
+
+## Generated files
+
+### `audit` script
+
+The command follows the detected package manager:
+
+| Package manager | Script |
+| --- | --- |
+| npm | `npm audit --audit-level=high` |
+| pnpm | `pnpm audit --audit-level=high` |
+| yarn | `yarn npm audit --severity high` |
+| bun | `npm audit --audit-level=high` |
+
+The `high` threshold is deliberate: a low-severity advisory should not be able to block a pull request.
+
+### `.gitleaks.toml`
+
+```toml
+title = "Gitleaks config"
+
+[allowlist]
+  description = "Allowlisted patterns"
+  paths = [
+    '''node_modules''',
+    '''pnpm-lock.yaml''',
+    '''package-lock.json''',
+    '''yarn.lock''',
+  ]
+```
+
+### `.github/workflows/gitleaks.yml`
+
+```yaml
+name: Gitleaks
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+`fetch-depth: 0` is what makes the scan cover the full history rather than only the last commit.
+
+### `.github/workflows/trivy.yml` and `.github/workflows/osv-scanner.yml`
+
+The Trivy workflow scans the repository for vulnerabilities and misconfigurations. The OSV-Scanner workflow checks dependencies against the Google OSV database. Both are written as standalone workflows so you can enable either without the other.
+
+## Packages installed
+
+None. Gitleaks, Trivy and OSV-Scanner run as container actions in the workflow, not as project dependencies.
+
+## Scripts added
+
+| Script | Command |
+| --- | --- |
+| `audit` | the package-manager audit command with a high threshold |
+
+## Manual setup versus DevFlow
+
+The manual version is copying three workflow files from three different projects, each pinned to a different action version, then adding the secrets by hand. DevFlow writes all of them in one pass with the same allowlist and the same trigger configuration.
+
+## Limits
+
+- **Gitleaks needs a licence key for private repositories.** The action reads `GITLEAKS_LICENSE` from the repository secrets. Public repositories work without one.
+- **The audit script does not run automatically.** It is a script you invoke. The [security CI guide](/guides/security-ci) shows how to add it to the pipeline.
+- **No CodeQL or dependency-review workflow.** Those are GitHub-native and depend on your repository settings and plan, so DevFlow does not generate them. The guide explains how to enable them.
+- **The allowlist only covers dependency lock files and `node_modules`.** If your project has legitimate secrets in test fixtures, add those paths.
+- **Trivy and OSV-Scanner are separate modules.** `--security` does not include them.
+
+## FAQ
+
+### Do I need a Gitleaks licence for a private repository?
+
+Yes. The Gitleaks action requires a `GITLEAKS_LICENSE` secret for private repositories. Public repositories work without one.
+
+### Does `npm audit` run automatically?
+
+No. The module adds an `audit` script and a Gitleaks workflow. Wiring the audit into the pipeline is a separate step, and the security CI guide shows it.
+
+### Will npm audit fail my build on low-severity issues?
+
+No. The generated audit command uses a high-severity threshold, so low and moderate findings are reported without failing the command.
+
+### Does DevFlow scan the whole Git history?
+
+The generated Gitleaks workflow checks out the repository with `fetch-depth: 0`, so the scan covers the full history rather than only the latest commit.
+
+## Related
+
+- [Security scanning in CI](/guides/security-ci) — wiring the audit and scanners into the pipeline
+- [Security reference](/docs/modules/security) — every scanner DevFlow supports
+- [GitHub Actions module](/modules/github-actions) — the pipeline the scanners attach to

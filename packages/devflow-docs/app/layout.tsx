@@ -1,68 +1,69 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { ReactNode } from 'react';
-import { Inter, Archivo, Roboto_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { GoogleAnalytics } from '@next/third-parties/google'
 import type { Metadata, Viewport } from 'next';
 import './global.css';
 import { Navbar } from '@/components/navbar';
+import { GITHUB_URL, NPM_URL, SITE_BRAND, SITE_URL } from '@/lib/site';
+import { keywordsFor } from '@/lib/keywords';
+import { organizationSchema, ogImageUrl, webSiteSchema } from '@/lib/seo';
+import { getProjectProof } from '@/lib/proof';
+
+const inter = localFont({
+  src: './fonts/inter.woff2',
+  variable: '--font-inter',
+  weight: '100 900',
+  display: 'swap',
+  fallback: ['system-ui', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+});
+
+const archivo = localFont({
+  src: './fonts/archivo.woff2',
+  variable: '--font-archivo',
+  weight: '100 900',
+  display: 'swap',
+  fallback: ['system-ui', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+});
+
+const robotoMono = localFont({
+  src: './fonts/robotomono.woff2',
+  variable: '--font-roboto-mono',
+  weight: '100 700',
+  display: 'swap',
+  fallback: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://dev-flow.xyz'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'DevFlow – Bootstrap Your Dev Workflow in Seconds',
-    template: '%s | DevFlow',
+    default: "DevFlow CLI — Developer Workflow Setup for TypeScript, React, Node.js and Monorepos",
+    template: "%s | DevFlow CLI",
   },
   description:
-    'DevFlow is a CLI tool that scaffolds a complete development workflow — Git hooks, commit conventions, ESLint, Prettier, Vitest, CI/CD, Docker, security, and more — in any repository via an interactive wizard.',
-  keywords: [
-    'devflow',
-    'create-devflow',
-    'npx create-devflow',
-    'bootstrap developer workflow',
-    'automate dev workflow setup',
-    'scaffold nodejs project',
-    'project setup automation cli',
-    'developer tooling cli',
-    'how to add husky to project',
-    'how to setup eslint nodejs',
-    'how to configure prettier typescript',
-    'how to add github actions nodejs',
-    'how to write dockerfile nodejs',
-    'nextjs developer setup',
-    'react project boilerplate',
-    'nestjs eslint setup',
-    'vue typescript lint setup',
-    'git hooks automation',
-    'conventional commits setup',
-    'ci cd pipeline nodejs',
-    'monorepo tooling setup',
-    'typescript eslint prettier config',
-  ],
-  authors: [{ name: 'DevFlow' }],
-  creator: 'DevFlow',
+    "Generate ESLint, Prettier, Husky, Vitest, GitHub Actions, Docker and security configs for your existing TypeScript project — without copy-pasting boilerplate. MIT licensed, 50 modules, one command.",
+  keywords: keywordsFor("/"),
+  applicationName: "DevFlow CLI",
+  authors: [{ name: "DevFlow", url: GITHUB_URL }],
+  creator: "DevFlow",
+  publisher: "DevFlow",
+  category: "technology",
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://dev-flow.xyz',
-    siteName: 'DevFlow',
-    title: 'DevFlow – Bootstrap Your Dev Workflow in Seconds',
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: SITE_BRAND,
+    title: "DevFlow CLI — Developer Workflow Setup for TypeScript, React, Node.js and Monorepos",
     description:
-      'Scaffold Git hooks, linting, testing, CI/CD, Docker, and more in any repo with one command: npx create-devflow.',
-    images: [
-      {
-        url: '/og-image.webp',
-        width: 1200,
-        height: 630,
-        alt: 'DevFlow – Bootstrap Your Dev Workflow in Seconds',
-      },
-    ],
+      "Generate ESLint, Prettier, Husky, Vitest, GitHub Actions, Docker and security configs for your existing TypeScript project — without copy-pasting boilerplate.",
+    images: [ogImageUrl()],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'DevFlow – Bootstrap Your Dev Workflow in Seconds',
+    card: "summary_large_image",
+    title: "DevFlow CLI — Developer Workflow Setup for TypeScript, React, Node.js and Monorepos",
     description:
-      'Scaffold Git hooks, linting, testing, CI/CD, Docker, and more in any repo with one command: npx create-devflow.',
-    images: ['/og-image.webp'],
+      "Generate ESLint, Prettier, Husky, Vitest, GitHub Actions, Docker and security configs for your existing TypeScript project — without copy-pasting boilerplate.",
+    images: [ogImageUrl().url],
   },
   robots: {
     index: true,
@@ -70,22 +71,22 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   alternates: {
-    canonical: 'https://dev-flow.xyz',
+    canonical: SITE_URL,
   },
   icons: {
     icon: [
-      { url: '/favicon.ico' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: "/favicon.ico" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: [{ url: '/apple-touch-icon.png' }],
-    other: [{ rel: 'manifest', url: '/site.webmanifest' }],
+    apple: [{ url: "/apple-touch-icon.png" }],
+    other: [{ rel: "manifest", url: "/site.webmanifest" }],
   },
 };
 
@@ -96,74 +97,11 @@ export const viewport: Viewport = {
   ],
 };
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-const archivo = Archivo({
-  subsets: ['latin'],
-  variable: '--font-archivo',
-  weight: ['400', '500', '600', '700'],
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ['latin'],
-  variable: '--font-roboto-mono',
-  weight: ['400', '500', '600', '700'],
-});
-
-async function getGithubStars(): Promise<number | null> {
-  try {
-    const res = await fetch('https://api.github.com/repos/disin8/devflow', {
-      next: { revalidate: 3600 },
-      headers: { Accept: 'application/vnd.github.v3+json' },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return typeof data.stargazers_count === 'number' ? data.stargazers_count : null;
-  } catch {
-    return null;
-  }
-}
-
 export default async function Layout({ children }: { children: ReactNode }) {
-  const stars = await getGithubStars();
+  const proof = await getProjectProof();
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'Organization',
-        '@id': 'https://dev-flow.xyz/#organization',
-        name: 'DevFlow',
-        url: 'https://dev-flow.xyz',
-        logo: {
-          '@type': 'ImageObject',
-          url: 'https://dev-flow.xyz/og-image.webp',
-          width: 1200,
-          height: 630,
-        },
-        description:
-          'DevFlow is a CLI tool that scaffolds a complete development workflow — Git hooks, commit conventions, ESLint, Prettier, Vitest, CI/CD, Docker, and more — in any JavaScript/TypeScript repository.',
-        sameAs: ['https://github.com/disin8/devflow', 'https://www.npmjs.com/package/create-devflow'],
-      },
-      {
-        '@type': 'WebSite',
-        '@id': 'https://dev-flow.xyz/#website',
-        url: 'https://dev-flow.xyz',
-        name: 'DevFlow',
-        description: 'Bootstrap your entire dev workflow in seconds with npx create-devflow.',
-        publisher: { '@id': 'https://dev-flow.xyz/#organization' },
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: {
-            '@type': 'EntryPoint',
-            urlTemplate: 'https://dev-flow.xyz/docs?q={search_term_string}',
-          },
-          'query-input': 'required name=search_term_string',
-        },
-      },
-    ],
+    '@graph': [organizationSchema(), webSiteSchema()],
   };
 
   return (
@@ -180,7 +118,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
       </head>
       <body className="flex flex-col min-h-screen">
         <RootProvider>
-          <Navbar stars={stars} />
+          <Navbar
+            stars={proof.github?.stars ?? null}
+            version={proof.npm?.version ?? null}
+          />
           {children}
         </RootProvider>
       </body>
