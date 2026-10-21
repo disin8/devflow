@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Changelog is auto-generated with [changelogen](https://github.com/unjs/changelogen).
 
+## v0.1.5
+
+[compare changes](https://github.com/disin8/devflow/compare/v0.1.4...v0.1.5)
+
 ## v0.1.4
 
 [compare changes](https://github.com/disin8/devflow/compare/v0.1.3...v0.1.4)
