@@ -1,6 +1,6 @@
 {
   "name": "create-devflow",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CLI that generates reproducible developer workflows for TypeScript, React, Node.js and monorepos: ESLint, Prettier, Husky, Vitest, GitHub Actions, Docker and security configs in one command.",
   "type": "module",
   "bin": {
