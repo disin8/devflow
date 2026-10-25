@@ -14,7 +14,7 @@
     "release": "changelogen --release --push"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.6.0",
+    "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^19.6.0",
     "changelogen": "^0.5.5"
   }
