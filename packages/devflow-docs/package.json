@@ -14,7 +14,7 @@
   "dependencies": {
     "@next/third-parties": "^16.1.6",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.5.0",
+    "@react-three/fiber": "^9.8.2",
     "@types/three": "^0.183.1",
     "fumadocs-core": "^16.6.9",
     "fumadocs-mdx": "^14.2.9",
