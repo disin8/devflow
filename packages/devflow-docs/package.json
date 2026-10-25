@@ -16,7 +16,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@types/three": "^0.183.1",
-    "fumadocs-core": "^16.6.9",
+    "fumadocs-core": "^16.17.7",
     "fumadocs-mdx": "^14.2.9",
     "fumadocs-ui": "^16.6.9",
     "lucide-react": "^0.575.0",
