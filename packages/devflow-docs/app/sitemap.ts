@@ -13,7 +13,7 @@ interface Entry {
 }
 
 const STATIC_ROUTES: Entry[] = [
-  { url: "/", baseUrl: "/", priority: 1, changeFrequency: "weekly" },
+  { url: "/", baseUrl: "/", priority: 1.0, changeFrequency: "weekly" },
   { url: "/cli", baseUrl: "/", priority: 0.9, changeFrequency: "weekly" },
   { url: "/templates", baseUrl: "/", priority: 0.8, changeFrequency: "weekly" },
   { url: "/builder", baseUrl: "/", priority: 0.6, changeFrequency: "monthly" },
@@ -29,8 +29,8 @@ const COLLECTIONS: {
   changeFrequency: ChangeFrequency;
 }[] = [
   { pages: source.getPages(), baseUrl: "/docs", priority: 0.8, changeFrequency: "weekly" },
-  { pages: modulesSource.getPages(), baseUrl: "/modules", priority: 0.85, changeFrequency: "weekly" },
-  { pages: guidesSource.getPages(), baseUrl: "/guides", priority: 0.85, changeFrequency: "weekly" },
+  { pages: modulesSource.getPages(), baseUrl: "/modules", priority: 0.7, changeFrequency: "weekly" },
+  { pages: guidesSource.getPages(), baseUrl: "/guides", priority: 0.7, changeFrequency: "weekly" },
   { pages: compareSource.getPages(), baseUrl: "/compare", priority: 0.7, changeFrequency: "monthly" },
 ];
 
@@ -49,14 +49,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const collection of COLLECTIONS) {
     for (const page of collection.pages) {
       if (EXCLUDED_PATHS.has(page.url)) continue;
-      entries.push({
-        url: absoluteUrl(page.url),
-        lastModified: lastModifiedFor(collection.baseUrl, page.url),
-        changeFrequency: collection.changeFrequency,
-        priority: collection.priority,
-      });
+      try {
+        entries.push({
+          url: absoluteUrl(page.url),
+          lastModified: lastModifiedFor(collection.baseUrl, page.url),
+          changeFrequency: collection.changeFrequency,
+          priority: collection.priority,
+        });
+      } catch {
+        entries.push({
+          url: absoluteUrl(page.url),
+          lastModified: new Date(),
+          changeFrequency: collection.changeFrequency,
+          priority: collection.priority,
+        });
+      }
     }
   }
 
-  return entries;
+  // Deduplicate by URL
+  const seen = new Set<string>();
+  const uniqueEntries: MetadataRoute.Sitemap = [];
+  for (const entry of entries) {
+    if (seen.has(entry.url)) continue;
+    seen.add(entry.url);
+    uniqueEntries.push(entry);
+  }
+
+  return uniqueEntries;
 }

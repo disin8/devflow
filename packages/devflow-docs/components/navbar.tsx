@@ -35,7 +35,7 @@ export function Navbar({ stars, version }: NavbarProps) {
 
   return (
     <nav className="relative top-0 z-50 w-full">
-      <div className={`mx-auto flex items-center gap-10 px-10 max-md:px-5 py-4 ${isHomePage ? 'bg-nav' : isBuilderPage ? 'bg-page' : 'bg-surface'}`}>
+      <div className={`mx-auto flex items-center gap-10 px-10 max-md:px-5 py-4 ${isHomePage ? 'bg-nav' : isBuilderPage ? 'bg-page' : 'bg-[#292929]'}`}>
         <Link href="/" className="flex items-center gap-2 text-foreground font-roboto-mono text-[15px] font-bold">
           DevFlow
           <span className="hidden sm:inline text-[12px] font-medium text-muted">CLI</span>
@@ -101,7 +101,7 @@ export function Navbar({ stars, version }: NavbarProps) {
       </div>
 
       {mobileOpen && (
-        <div className={`md:hidden border-t border-line ${isBuilderPage ? 'bg-page' : 'bg-nav'} px-5 py-6`}>
+        <div className={`md:hidden border-t border-line ${isHomePage ? 'bg-nav' : isBuilderPage ? 'bg-page' : 'bg-[#292929]'} px-5 py-6`}>
           <div className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link
