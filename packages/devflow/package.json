@@ -60,7 +60,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.3.2",
+    "@inquirer/prompts": "^8.7.4",
     "chalk": "^5.4.1",
     "commander": "^13.1.0",
     "detect-indent": "^7.0.1",
