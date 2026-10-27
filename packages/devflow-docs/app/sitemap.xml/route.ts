@@ -34,7 +34,7 @@ const COLLECTIONS: {
   { pages: compareSource.getPages(), baseUrl: "/compare", priority: 0.7, changeFrequency: "monthly" },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+function buildEntries(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
   for (const route of STATIC_ROUTES) {
@@ -67,7 +67,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
-  // Deduplicate by URL
   const seen = new Set<string>();
   const uniqueEntries: MetadataRoute.Sitemap = [];
   for (const entry of entries) {
@@ -77,4 +76,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }
 
   return uniqueEntries;
+}
+
+export async function GET() {
+  const entries = buildEntries();
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+${entries
+  .map(
+    (entry) => `  <url>
+    <loc>${entry.url}</loc>
+    <lastmod>${entry.lastModified instanceof Date ? entry.lastModified.toISOString() : entry.lastModified}</lastmod>
+    <changefreq>${entry.changeFrequency}</changefreq>
+    <priority>${entry.priority}</priority>
+  </url>`
+  )
+  .join("\n")}
+</urlset>`;
+
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, s-maxage=86400",
+    },
+  });
 }
