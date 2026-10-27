@@ -8,7 +8,7 @@ if (!existsSync(publicDir)) {
 }
 
 for (const name of readdirSync(publicDir)) {
-  if (name === 'robots.txt' || /^sitemap.*\.xml$/.test(name)) {
+  if (/^sitemap.*\.xml$/.test(name)) {
     rmSync(join(publicDir, name), { force: true });
   }
 }

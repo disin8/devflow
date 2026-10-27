@@ -1,0 +1,632 @@
+# DevFlow Documentation - Full Content for LLMs
+
+> Complete documentation content for AI assistants and LLMs
+
+## Site Information
+
+**Name:** DevFlow
+**Brand:** DevFlow CLI
+**Tagline:** Developer workflow setup for TypeScript, React, Node.js and monorepos
+**URL:** https://dev-flow.xyz
+**Repository:** https://github.com/disin8/devflow
+**npm Package:** create-devflow
+**License:** MIT
+
+---
+
+## Installation
+
+### Prerequisites
+- Node.js 18, 20, or 22
+- npm, pnpm, yarn, or bun
+- Git
+
+### Quick Install
+```bash
+npx create-devflow@latest
+```
+
+### Dry Run (Preview Changes)
+```bash
+npx create-devflow --dry-run
+```
+
+### Interactive Wizard
+```bash
+npx create-devflow --wizard
+```
+
+### Manual Installation
+```bash
+# Using npm
+npm create devflow@latest
+
+# Using pnpm
+pnpm create devflow@latest
+
+# Using yarn
+yarn create devflow@latest
+
+# Using bun
+bun create devflow@latest
+```
+
+---
+
+## Configuration
+
+DevFlow uses a `devflow.config.ts` file for configuration:
+
+```typescript
+import { defineConfig } from 'devflow';
+
+export default defineConfig({
+  // Project settings
+  project: {
+    name: 'my-project',
+    type: 'monorepo', // 'app' | 'lib' | 'monorepo'
+    packageManager: 'pnpm',
+  },
+
+  // Module selection
+  modules: {
+    // Code quality
+    eslint: true,
+    prettier: true,
+    typescript: true,
+
+    // Git & hooks
+    git: true,
+    husky: true,
+    'lint-staged': true,
+    commitlint: true,
+
+    // Testing
+    vitest: true,
+
+    // CI/CD
+    githubActions: true,
+
+    // Containerization
+    docker: true,
+
+    // Releases
+    changesets: true,
+
+    // Security
+    security: true,
+
+    // Documentation
+    docs: true,
+  },
+
+  // Custom module options
+  eslint: {
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+
+  prettier: {
+    semi: true,
+    singleQuote: true,
+    printWidth: 100,
+  },
+
+  githubActions: {
+    nodeVersions: [18, 20, 22],
+    cache: 'pnpm',
+  },
+});
+```
+
+---
+
+## Modules Reference
+
+### Code Quality
+
+#### ESLint (`eslint`)
+Configures ESLint with:
+- TypeScript ESLint parser
+- React, React Hooks, JSX-A11y plugins
+- Import sorting and organization
+- Unused imports detection
+- Strict TypeScript rules
+
+#### Prettier (`prettier`)
+Code formatting with:
+- Consistent formatting across the team
+- Editor integration (VS Code, WebStorm)
+- Pre-commit formatting via lint-staged
+
+#### TypeScript (`typescript`)
+Strict TypeScript configuration:
+- `strict: true`
+- `noUncheckedIndexedAccess: true`
+- `exactOptionalPropertyTypes: true`
+- Path aliases for clean imports
+
+### Git & Hooks
+
+#### Git (`git`)
+- `.gitignore` templates for Node, IDE, OS
+- Git attributes for line endings
+- Commit message templates
+
+#### Husky (`husky`)
+Git hooks manager:
+- Pre-commit: lint-staged
+- Commit-msg: commitlint
+- Pre-push: type check, tests
+
+#### lint-staged (`lint-staged`)
+Runs linters on staged files:
+- ESLint with auto-fix
+- Prettier formatting
+- TypeScript type checking
+
+#### commitlint (`commitlint`)
+Enforces conventional commits:
+- `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `chore:`
+- Scope support: `feat(api): add endpoint`
+- Breaking change detection
+
+### Testing
+
+#### Vitest (`vitest`)
+- Fast unit testing with Vite
+- React Testing Library integration
+- Coverage with v8/istanbul
+- Watch mode for development
+- TypeScript support out of the box
+
+### CI/CD
+
+#### GitHub Actions (`githubActions`)
+Generates workflows for:
+- **CI:** Lint, type-check, test, build
+- **CD:** Deploy on merge to main
+- **Release:** Automated versioning with Changesets
+- **Security:** Dependency scanning, codeql
+- **Docker:** Multi-platform builds
+
+Example generated workflow:
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test --coverage
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+```
+
+### Containerization
+
+#### Docker (`docker`)
+- Multi-stage Dockerfile (builder, runner)
+- `.dockerignore` optimized for Node.js
+- `docker-compose.yml` for local development
+- Dev container configuration (`.devcontainer/`)
+- Multi-platform builds (amd64, arm64)
+- Non-root user for security
+- Health checks included
+
+### Releases
+
+#### Changesets (`changesets`)
+- Automated versioning
+- Changelog generation
+- GitHub releases
+- npm publishing
+- Supports monorepo independent versioning
+
+### Security
+
+#### Security (`security`)
+- **Dependency scanning:** npm audit, OWASP Dependency Check
+- **Secret detection:** TruffleHog, GitLeaks
+- **SAST:** CodeQL analysis
+- **Container scanning:** Trivy, Grype
+- **License compliance:** FOSSA, license-checker
+- **Supply chain:** Sigstore cosign, SLSA provenance
+
+### Monorepo
+
+#### Turborepo (`turborepo`)
+- Remote caching
+- Task pipeline definition
+- Affected builds
+- Parallel execution
+
+#### Nx (`nx`)
+- Computation caching
+- Distributed task execution
+- Code generators
+- Dependency graph visualization
+
+#### pnpm Workspaces (`pnpm-workspace`)
+- Efficient disk usage
+- Fast installs
+- Workspace protocols
+
+### Developer Experience
+
+#### EditorConfig (`editorconfig`)
+- Consistent coding styles across editors
+- Indent size, charset, line endings
+- Editor-agnostic configuration
+
+#### VS Code (`vscode`)
+- Recommended extensions
+- Settings for TypeScript, ESLint, Prettier
+- Debug configurations
+- Task definitions
+
+---
+
+## Guides
+
+### ESLint + Prettier + Husky Setup
+Complete guide to setting up code quality tooling:
+1. Install dependencies
+2. Configure ESLint with TypeScript
+3. Add Prettier for formatting
+4. Set up Husky pre-commit hooks
+5. Configure lint-staged
+6. Add commitlint for commit messages
+
+### GitHub Actions for Next.js
+Production-ready CI/CD for Next.js:
+- Build optimization
+- Edge runtime support
+- Preview deployments
+- Production deployment to Vercel/AWS
+
+### Vitest + React + TypeScript
+Modern testing setup:
+- Component testing with RTL
+- Mocking with vi
+- Coverage thresholds
+- CI integration
+
+### NestJS + Docker
+Backend API with containerization:
+- Multi-stage Dockerfile
+- Database migrations
+- Health checks
+- Production deployment
+
+### Turborepo CI
+Monorepo CI optimization:
+- Affected project detection
+- Remote caching setup
+- Parallel task execution
+- Selective deployment
+
+### Conventional Commits
+Standardized commit messages:
+- Commit message format
+- Semantic versioning
+- Automated changelogs
+- Team adoption guide
+
+### Security CI
+Security in the pipeline:
+- Dependency vulnerability scanning
+- Secret detection
+- Static analysis
+- Container scanning
+- License compliance
+
+---
+
+## CLI Reference
+
+### Commands
+
+#### `create-devflow` / `npx create-devflow`
+Main entry point for project initialization.
+
+**Options:**
+- `--dry-run` - Preview changes without writing files
+- `--wizard` - Interactive configuration wizard
+- `--preset <name>` - Use a predefined preset
+- `--modules <list>` - Comma-separated list of modules
+- `--package-manager <pm>` - npm, pnpm, yarn, bun
+- `--yes` - Accept all defaults
+- `--help` - Show help
+- `--version` - Show version
+
+**Examples:**
+```bash
+# Basic usage
+npx create-devflow
+
+# With preset
+npx create-devflow --preset nextjs
+
+# Custom modules
+npx create-devflow --modules eslint,prettier,githubActions
+
+# Dry run
+npx create-devflow --dry-run
+
+# Full wizard
+npx create-devflow --wizard
+```
+
+#### `devflow add <module>`
+Add a module to existing project.
+
+#### `devflow remove <module>`
+Remove a module from project.
+
+#### `devflow update`
+Update DevFlow and regenerate configs.
+
+#### `devflow doctor`
+Diagnose project configuration issues.
+
+---
+
+## Presets
+
+### Available Presets
+- **nextjs** - Next.js app with App Router
+- **react-vite** - React + Vite + TypeScript
+- **node-cli** - Node.js CLI application
+- **node-lib** - Node.js library/package
+- **nestjs** - NestJS backend API
+- **monorepo-turbo** - Turborepo monorepo
+- **monorepo-nx** - Nx monorepo
+- **react-native** - React Native + Expo
+- **electron** - Electron desktop app
+- **chrome-extension** - Chrome extension
+
+### Custom Presets
+Create `.devflow/presets/my-preset.json`:
+```json
+{
+  "name": "My Company Preset",
+  "description": "Standard setup for our projects",
+  "modules": {
+    "eslint": true,
+    "prettier": true,
+    "typescript": true,
+    "husky": true,
+    "githubActions": true,
+    "docker": true,
+    "security": true
+  },
+  "eslint": { "extends": ["@company/eslint-config"] },
+  "prettier": { "printWidth": 120 }
+}
+```
+
+---
+
+## Architecture
+
+### Core Concepts
+
+#### Module System
+Each module is a self-contained unit that:
+1. Declares dependencies
+2. Provides file templates
+3. Configures tooling
+4. Generates code/configuration
+5. Validates setup
+
+#### Context Detection
+DevFlow analyzes your project to:
+- Detect framework (Next.js, React, Vue, etc.)
+- Identify package manager
+- Find existing configuration
+- Suggest relevant modules
+- Avoid conflicts
+
+#### Executor
+The execution engine:
+- Resolves module dependencies
+- Orders execution topologically
+- Handles conflicts
+- Provides rollback on failure
+- Reports progress
+
+#### Module Interface
+```typescript
+interface Module {
+  name: string;
+  description: string;
+  dependencies?: string[];
+  peerDependencies?: string[];
+  files: FileTemplate[];
+  validate?: (context: ProjectContext) => ValidationResult;
+  generate?: (context: ProjectContext) => Promise<GeneratedFiles>;
+}
+```
+
+---
+
+## Creating Custom Modules
+
+### Module Structure
+```
+my-module/
+├── module.ts          # Module definition
+├── templates/         # File templates
+│   ├── .eslintrc.json.hbs
+│   └── package.json.hbs
+├── scripts/           # Generation scripts
+│   └── post-install.ts
+└── test/              # Module tests
+```
+
+### Module Definition
+```typescript
+// module.ts
+import { defineModule } from 'devflow';
+
+export default defineModule({
+  name: 'my-module',
+  description: 'Custom module for company standards',
+  dependencies: ['eslint'],
+  files: [
+    { source: 'templates/.eslintrc.json.hbs', target: '.eslintrc.json' },
+  ],
+  async generate(context) {
+    // Custom generation logic
+    return { '.customrc': '{ "setting": true }' };
+  },
+});
+```
+
+### Template Syntax (Handlebars)
+```handlebars
+// templates/.eslintrc.json.hbs
+{
+  "extends": ["{{#if typescript}}plugin:@typescript-eslint/recommended{{/if}}"],
+  "rules": {
+    "{{ruleName}}": "{{ruleValue}}"
+  }
+}
+```
+
+---
+
+## Comparison with Alternatives
+
+### DevFlow vs Manual Setup
+| Aspect | Manual | DevFlow |
+|--------|--------|---------|
+| Time | Hours | Minutes |
+| Consistency | Manual | Automated |
+| Updates | Manual | `devflow update` |
+| Best practices | Research | Built-in |
+| Customization | Full | Configurable |
+
+### DevFlow vs create-next-app
+- create-next-app: Only Next.js, minimal tooling
+- DevFlow: Any framework, comprehensive tooling
+
+### DevFlow vs Nx
+- Nx: Build system + monorepo tools
+- DevFlow: Workflow setup + configuration generator
+- Complementary: Use DevFlow inside Nx workspace
+
+### DevFlow vs Turborepo
+- Turborepo: Build orchestration
+- DevFlow: Project configuration
+- Complementary: DevFlow configures Turborepo
+
+---
+
+## Changelog Highlights
+
+### v0.2.0 (Current)
+- Added 50+ modules
+- Module dependency resolution
+- Interactive wizard
+- Dry-run mode
+- Custom presets
+- Improved TypeScript config
+- Enhanced GitHub Actions
+- Security module
+- Documentation module
+
+### v0.1.0
+- Initial release
+- Core module system
+- Basic templates
+- CLI interface
+
+---
+
+## Contributing
+
+### Development Setup
+```bash
+git clone https://github.com/disin8/devflow
+cd devflow
+pnpm install
+pnpm build
+```
+
+### Creating a Module
+1. Create module in `packages/devflow-core/modules/`
+2. Add templates and logic
+3. Write tests
+4. Update documentation
+5. Submit PR
+
+### Code Standards
+- TypeScript strict mode
+- ESLint + Prettier
+- Conventional commits
+- 100% test coverage for new code
+- Documentation for public APIs
+
+---
+
+## Support & Community
+
+- **GitHub Issues:** Bug reports, feature requests
+- **GitHub Discussions:** Questions, ideas, showcases
+- **Discord:** Real-time chat (link in repo)
+- **Twitter/X:** @devflow_cli
+- **Email:** dmitry.sin8@gmail.com
+
+---
+
+## License
+
+MIT License - Copyright (c) 2024 Dmitry Sinitsyn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

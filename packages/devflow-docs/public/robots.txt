@@ -1,0 +1,86 @@
+# DevFlow CLI - robots.txt
+# https://dev-flow.xyz
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /*.json$
+Disallow: /*.xml$
+Disallow: /search
+Disallow: /builder
+Disallow: /changelog
+Disallow: /docs/cli-reference
+
+# AI Crawlers - Full access for training/indexing
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: BingChat
+Allow: /
+
+User-agent: BingPreview
+Allow: /
+
+# Major search engines - Polite crawling
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 10
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 10
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 10
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 10
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 10
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 10
+
+# SEO crawlers - Block to reduce server load
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+# Sitemap
+Sitemap: https://dev-flow.xyz/sitemap.xml
+
+# Host
+Host: https://dev-flow.xyz

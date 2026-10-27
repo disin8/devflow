@@ -1,0 +1,104 @@
+# DevFlow Documentation
+
+> Developer workflow setup for TypeScript, React, Node.js and monorepos
+
+## Overview
+
+DevFlow is a CLI tool that automates the setup of modern development workflows. It configures ESLint, Prettier, Husky, GitHub Actions, Vitest, Docker, and more with a single command.
+
+**Website:** https://dev-flow.xyz
+**GitHub:** https://github.com/disin8/devflow
+**npm:** https://www.npmjs.com/package/create-devflow
+**Install:** `npx create-devflow`
+
+---
+
+## Documentation Sections
+
+### Getting Started
+- [Installation](/docs/installation) - Install DevFlow and set up your first project
+- [Quick Start](/docs/quick-start) - Get running in 5 minutes
+- [Configuration](/docs/configuration) - Customize DevFlow behavior
+- [Presets](/docs/presets) - Pre-configured setups for common stacks
+- [Dry Run](/docs/dry-run) - Preview changes without applying
+- [Wizard](/docs/wizard) - Interactive project setup
+
+### Architecture
+- [Overview](/docs/architecture/overview) - System architecture and design principles
+- [Context Detection](/docs/architecture/context-detection) - How DevFlow detects project context
+- [Executor](/docs/architecture/executor) - Module execution engine
+- [Module Interface](/docs/architecture/module-interface) - Building custom modules
+
+### Modules (50+ modules across 10 categories)
+- [Module Index](/docs/modules) - All available modules
+- [Git](/docs/modules/git) - Git configuration and hooks
+- [Code Quality](/docs/modules/quality) - ESLint, Prettier, TypeScript
+- [Testing](/docs/modules/testing) - Vitest, Playwright, React Testing Library
+- [CI/CD](/docs/modules/ci-cd) - GitHub Actions, GitLab CI
+- [Docker](/docs/modules/docker) - Containerization setup
+- [Releases](/docs/modules/releases) - Automated versioning and changelogs
+- [Security](/docs/modules/security) - Dependency scanning, secrets detection
+- [Monorepo](/docs/modules/monorepo) - Turborepo, Nx, workspace config
+- [Developer Experience](/docs/modules/dx) - Editor config, debugging, tools
+
+### Guides
+- [Guides Index](/guides) - Step-by-step tutorials
+- [ESLint + Prettier + Husky](/guides/eslint-prettier-husky)
+- [GitHub Actions for Next.js](/guides/github-actions-nextjs)
+- [Vitest + React + TypeScript](/guides/vitest-react-typescript)
+- [NestJS + Docker](/guides/nestjs-docker)
+- [Turborepo CI](/guides/turborepo-ci)
+- [Conventional Commits](/guides/conventional-commits)
+- [Security CI](/guides/security-ci)
+
+### Module Reference
+- [ESLint](/modules/eslint) - Linting configuration
+- [Prettier](/modules/prettier) - Code formatting
+- [Husky](/modules/husky) - Git hooks
+- [lint-staged](/modules/lint-staged) - Staged file linting
+- [commitlint](/modules/commitlint) - Commit message validation
+- [Vitest](/modules/vitest) - Unit testing
+- [GitHub Actions](/modules/github-actions) - CI/CD pipelines
+- [Docker](/modules/docker) - Containerization
+- [Monorepo](/modules/monorepo) - Workspace management
+- [Security](/modules/security) - Security hardening
+
+### Comparisons
+- [Compare Index](/compare) - DevFlow vs alternatives
+- [vs Manual Setup](/compare/manual-setup)
+- [vs create-next-app](/compare/create-next-app)
+- [vs Nx](/compare/nx)
+- [vs Turborepo](/compare/turborepo)
+
+### Other
+- [CLI Reference](/cli) - Complete command documentation
+- [Templates](/templates) - Project templates
+- [Changelog](/changelog) - Release history
+- [Builder](/builder) - Visual configuration builder
+
+---
+
+## Key Features
+
+- **Zero-config defaults** - Works out of the box for TypeScript, React, Node.js, Next.js
+- **50+ modules** - Comprehensive ecosystem covering all aspects of modern development
+- **Monorepo native** - Built-in support for Turborepo, Nx, pnpm workspaces
+- **Extensible** - Create custom modules for your organization
+- **CI/CD ready** - Generates production-ready GitHub Actions workflows
+- **Docker support** - Multi-stage builds, docker-compose, dev containers
+- **Security first** - Dependency scanning, secret detection, supply chain security
+- **Type-safe** - Full TypeScript support with strict mode
+
+---
+
+## License
+
+MIT License - see [LICENSE](https://github.com/disin8/devflow/blob/main/LICENSE)
+
+---
+
+## Support
+
+- **Issues:** https://github.com/disin8/devflow/issues
+- **Discussions:** https://github.com/disin8/devflow/discussions
+- **Email:** dmitry.sin8@gmail.com
